@@ -3,7 +3,7 @@ package com.outr
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.math.Interpolation
-import com.badlogic.gdx.scenes.scene2d.Actor
+import com.badlogic.gdx.scenes.scene2d.{InputEvent, Event, EventListener, Actor}
 import com.badlogic.gdx.scenes.scene2d.actions.{AlphaAction, MoveToAction, RunnableAction}
 
 /**
@@ -106,5 +106,17 @@ package object gl {
     }
 
     def center() = centerX().centerY()
+
+    def onTouch(f: => Unit) = {
+      actor.addListener(new EventListener {
+        override def handle(event: Event) = event match {
+          case e: InputEvent if e.getType == InputEvent.Type.touchDown => {
+            f
+            true
+          }
+          case _ => false
+        }
+      })
+    }
   }
 }
