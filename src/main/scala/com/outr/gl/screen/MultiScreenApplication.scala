@@ -1,5 +1,6 @@
 package com.outr.gl.screen
 
+import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.{ApplicationListener, Gdx, Screen}
 
 import scala.annotation.tailrec
@@ -16,6 +17,12 @@ abstract class MultiScreenApplication extends ApplicationListener {
 
   def addScreen(screen: Screen) = synchronized {
     _screens += screen
+    screen.show()
+    screen.resize(Gdx.graphics.getWidth, Gdx.graphics.getHeight)
+  }
+
+  def insertScreen(index: Int, screen: Screen) = synchronized {
+    _screens.insert(index, screen)
     screen.show()
     screen.resize(Gdx.graphics.getWidth, Gdx.graphics.getHeight)
   }
@@ -41,7 +48,10 @@ abstract class MultiScreenApplication extends ApplicationListener {
   }
 
   private val renderFunction = (s: Screen) => s.render(Gdx.graphics.getDeltaTime)
-  override def render() = withScreens(renderFunction)
+  override def render() = {
+    Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
+    withScreens(renderFunction)
+  }
 
   private val resizeFunction = (s: Screen) => s.resize(Gdx.graphics.getWidth, Gdx.graphics.getHeight)
   override def resize(width: Int, height: Int) = withScreens(resizeFunction)

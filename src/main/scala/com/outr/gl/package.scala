@@ -26,7 +26,7 @@ package object gl {
     action
   }
 
-  def moveTo(actor: Actor, x: Float, y: Float, duration: Float, interpolation: Interpolation) = {
+  def move(actor: Actor, x: Float, y: Float, duration: Float, interpolation: Interpolation) = {
     val action = new MoveToAction
     action.setX(x)
     action.setY(y)

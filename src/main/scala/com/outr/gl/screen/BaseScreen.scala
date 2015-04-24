@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import com.badlogic.gdx.graphics._
 import com.badlogic.gdx.graphics.g2d.Sprite
 import com.badlogic.gdx.graphics.glutils.FrameBuffer
+import com.badlogic.gdx.math.Interpolation
 import com.badlogic.gdx.scenes.scene2d.actions.Actions._
 import com.badlogic.gdx.{Gdx, Screen}
 import com.badlogic.gdx.scenes.scene2d.{Action, Stage}
@@ -23,6 +24,9 @@ abstract class BaseScreen extends Screen {
   private var cachedBuffer: FrameBuffer = _
   private var cachedSprite: Sprite = _
 
+  private var _transitioning = false
+  def transitioning = _transitioning
+
   def init(): Unit
 
   override def show() = {
@@ -40,7 +44,6 @@ abstract class BaseScreen extends Screen {
   }
 
   override def render(delta: Float) = {
-    Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
     val createSprite = cached && cachedSprite == null
     if (cached && cachedSprite != null) {   // Cached sprite already exists, lets render it instead of drawing
       stage.getBatch.begin()
@@ -52,7 +55,9 @@ abstract class BaseScreen extends Screen {
       cachedBuffer.begin()
     } else if (cachedSprite != null) {      // Not cached, so kill the sprite
       cachedSprite.getTexture.dispose()
+      cachedBuffer.dispose()
       cachedSprite = null
+      cachedBuffer = null
     }
     if (!cached || createSprite) {          // Non-cached rendering
       stage.act(delta)
@@ -84,7 +89,52 @@ abstract class BaseScreen extends Screen {
     stage.getRoot.removeAction(action)
   }
 
-  def fadeToScreen(screen: Screen, time: Float = 2.0f) = addAction(sequence(fadeOut(time), function {
-    MultiScreenApplication().setScreen(screen)
-  }))
+  def transitionPushLeft(screen: BaseScreen, time: Float = 0.25f, interpolation: Interpolation = Interpolation.linear) = {
+    screen.stage.getRoot.setX(Gdx.graphics.getWidth)
+    MultiScreenApplication().addScreen(screen)
+    transitionToScreen(
+      screen,
+      move(stage.getRoot, -Gdx.graphics.getWidth, 0.0f, time, interpolation),
+      move(screen.stage.getRoot, 0.0f, 0.0f, time, interpolation)
+    )
+  }
+
+  def transitionPushRight(screen: BaseScreen, time: Float = 0.25f, interpolation: Interpolation = Interpolation.linear) = {
+    screen.stage.getRoot.setX(-Gdx.graphics.getWidth)
+    MultiScreenApplication().addScreen(screen)
+    transitionToScreen(
+      screen,
+      move(stage.getRoot, Gdx.graphics.getWidth, 0.0f, time, interpolation),
+      move(screen.stage.getRoot, 0.0f, 0.0f, time, interpolation)
+    )
+  }
+
+  def transitionSlideOverLeft(screen: BaseScreen, time: Float = 0.25f, interpolation: Interpolation = Interpolation.linear) = {
+    screen.stage.getRoot.setX(Gdx.graphics.getWidth)
+    MultiScreenApplication().addScreen(screen)
+    transitionToScreen(
+      screen,
+      move(screen.stage.getRoot, 0.0f, 0.0f, time, interpolation)
+    )
+  }
+
+  def transitionSlideOutRight(screen: BaseScreen, time: Float = 0.25f, interpolation: Interpolation = Interpolation.linear) = {
+    screen.stage.getRoot.setX(0.0f)
+    MultiScreenApplication().insertScreen(0, screen)
+    transitionToScreen(
+      screen,
+      move(stage.getRoot, Gdx.graphics.getWidth, 0.0f, time, interpolation)
+    )
+  }
+
+  def transitionToScreen(screen: BaseScreen, actions: Action*) = if (!transitioning) {
+    _transitioning = true
+    addAction(sequence(
+      parallel(actions: _*),
+      function {
+        MultiScreenApplication().removeScreen(this)
+        _transitioning = false
+      }
+    ))
+  }
 }
