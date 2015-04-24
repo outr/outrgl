@@ -18,11 +18,8 @@ import com.outr.gl._
  */
 abstract class BaseScreen extends Screen {
   lazy val stage = new Stage(new ScreenViewport)
-  var cached = false
 
   private val initialized = new AtomicBoolean
-  private var cachedBuffer: FrameBuffer = _
-  private var cachedSprite: Sprite = _
 
   private var _transitioning = false
   def transitioning = _transitioning
@@ -44,33 +41,10 @@ abstract class BaseScreen extends Screen {
   }
 
   override def render(delta: Float) = {
-    val createSprite = cached && cachedSprite == null
-    if (cached && cachedSprite != null) {   // Cached sprite already exists, lets render it instead of drawing
-      stage.getBatch.begin()
-      cachedSprite.draw(stage.getBatch)
-      stage.getBatch.end()
-    } else if (createSprite) {              // We need to create the sprite in this render
-    val hasDepth = false
-      cachedBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth, Gdx.graphics.getHeight, hasDepth)
-      cachedBuffer.begin()
-    } else if (cachedSprite != null) {      // Not cached, so kill the sprite
-      cachedSprite.getTexture.dispose()
-      cachedBuffer.dispose()
-      cachedSprite = null
-      cachedBuffer = null
-    }
-    if (!cached || createSprite) {          // Non-cached rendering
-      stage.act(delta)
-      stage.getBatch.enableBlending()
-      stage.getBatch.setColor(1.0f, 1.0f, 1.0f, 1.0f)
-      stage.draw()
-    }
-    if (createSprite) {
-      cachedBuffer.end()
-      cachedSprite = new Sprite(cachedBuffer.getColorBufferTexture)
-      cachedSprite.flip(false, true)
-      cachedSprite.setPosition(0, 0)
-    }
+    stage.act(delta)
+    stage.getBatch.enableBlending()
+    stage.getBatch.setColor(1.0f, 1.0f, 1.0f, 1.0f)
+    stage.draw()
   }
 
   override def pause() = {}
