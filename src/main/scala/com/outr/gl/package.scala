@@ -36,7 +36,7 @@ package object gl {
     action
   }
 
-  def fadeTo(to: Float, actor: Actor, duration: Float, interpolation: Interpolation) = {
+  def fade(actor: Actor, to: Float, duration: Float, interpolation: Interpolation) = {
     val action = new AlphaAction
     action.setAlpha(to)
     action.setDuration(duration)

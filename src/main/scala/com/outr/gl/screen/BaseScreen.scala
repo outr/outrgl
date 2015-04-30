@@ -63,6 +63,16 @@ abstract class BaseScreen extends Screen {
     stage.getRoot.removeAction(action)
   }
 
+  def transitionCrossFade(screen: BaseScreen, time: Float = 0.25f, interpolation: Interpolation = Interpolation.linear) = {
+    screen.stage.getRoot.getColor.a = 0.0f
+    MultiScreenApplication().addScreen(screen)
+    transitionToScreen(
+      screen,
+      fade(stage.getRoot, 0.0f, time, interpolation),
+      fade(screen.stage.getRoot, 1.0f, time, interpolation)
+    )
+  }
+
   def transitionPushLeft(screen: BaseScreen, time: Float = 0.25f, interpolation: Interpolation = Interpolation.linear) = {
     screen.stage.getRoot.setX(Gdx.graphics.getWidth)
     MultiScreenApplication().addScreen(screen)

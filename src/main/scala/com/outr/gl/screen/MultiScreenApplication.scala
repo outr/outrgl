@@ -16,12 +16,14 @@ abstract class MultiScreenApplication extends ApplicationListener {
   def screens = _screens.toList
 
   def addScreen(screen: Screen) = synchronized {
+    _screens -= screen
     _screens += screen
     screen.show()
     screen.resize(Gdx.graphics.getWidth, Gdx.graphics.getHeight)
   }
 
   def insertScreen(index: Int, screen: Screen) = synchronized {
+    _screens -= screen
     _screens.insert(index, screen)
     screen.show()
     screen.resize(Gdx.graphics.getWidth, Gdx.graphics.getHeight)
