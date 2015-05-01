@@ -2,9 +2,6 @@ package com.outr.gl.screen
 
 import java.util.concurrent.atomic.AtomicBoolean
 
-import com.badlogic.gdx.graphics._
-import com.badlogic.gdx.graphics.g2d.Sprite
-import com.badlogic.gdx.graphics.glutils.FrameBuffer
 import com.badlogic.gdx.math.Interpolation
 import com.badlogic.gdx.scenes.scene2d.actions.Actions._
 import com.badlogic.gdx.{Gdx, Screen}
@@ -12,12 +9,14 @@ import com.badlogic.gdx.scenes.scene2d.{Action, Stage}
 import com.badlogic.gdx.utils.viewport.ScreenViewport
 
 import com.outr.gl._
+import com.outr.gl.input.InputManager
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-abstract class BaseScreen extends Screen {
+trait BaseScreen extends Screen {
   lazy val stage = new Stage(new ScreenViewport)
+  lazy val input = InputManager(stage)
 
   private val initialized = new AtomicBoolean
 
@@ -31,6 +30,7 @@ abstract class BaseScreen extends Screen {
       init()
     }
     Gdx.input.setInputProcessor(stage)
+    InputManager.set(stage)
   }
 
   override def resize(width: Int, height: Int) = {

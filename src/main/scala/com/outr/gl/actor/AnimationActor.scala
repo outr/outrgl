@@ -17,6 +17,9 @@ class AnimationActor(regions: Array[TextureRegion], frameDuration: Float = 0.025
   setHeight(regions(0).getRegionHeight)
 
   override def draw(batch: Batch, parentAlpha: Float) = {
+    val color = getColor
+    batch.setColor(color.r, color.g, color.b, color.a * parentAlpha)
+
     elapsed += Gdx.graphics.getDeltaTime
     val frame = animation.getKeyFrame(elapsed, true)
     batch.draw(frame, getX, getY)
