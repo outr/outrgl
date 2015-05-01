@@ -54,7 +54,8 @@ class InputManager private(stage: Stage) extends Listenable with Logging {
                 }
               }
             }
-            case None => info(s"No key mapping found for: ${evt.getKeyCode} (${evt.getCharacter})")
+            case None if evt.getKeyCode != 0 => info(s"No key mapping found for: ${evt.getKeyCode} (${evt.getCharacter})")
+            case None => // Ignore
           }
         } catch {
           case t: Throwable => error(s"Error while handling InputEvent: ${evt.getKeyCode} (${evt.getCharacter})", t)

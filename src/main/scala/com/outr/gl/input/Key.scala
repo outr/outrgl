@@ -35,6 +35,7 @@ object Key extends Enumerated[Key] {
   case object A extends Key(29, Some('a'))
   case object S extends Key(47, Some('s'))
   case object D extends Key(32, Some('d'))
+  case object X extends Key(52, Some('x'))
   case object Enter extends Key(66)
   case object Backspace extends Key(67)
   case object Escape extends Key(131)

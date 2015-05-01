@@ -30,8 +30,8 @@ abstract class MultiScreenApplication extends ApplicationListener {
   }
 
   def removeScreen(screen: Screen) = synchronized {
-    _screens -= screen
     screen.hide()
+    _screens -= screen
   }
 
   def setScreen(screen: Screen) = synchronized {
