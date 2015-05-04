@@ -3,7 +3,7 @@ package com.outr
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.math.Interpolation
-import com.badlogic.gdx.scenes.scene2d.{InputEvent, Event, EventListener, Actor}
+import com.badlogic.gdx.scenes.scene2d._
 import com.badlogic.gdx.scenes.scene2d.actions.{AlphaAction, MoveToAction, RunnableAction}
 import com.outr.gl.screen.AbstractBaseScreen
 import org.powerscala.Unique
@@ -12,6 +12,8 @@ import org.powerscala.Unique
  * @author Matt Hicks <matt@outr.com>
  */
 package object gl {
+  var AutoAdjust = false
+
   var VirtualWidth = 1920.0f
   var VirtualHeight = 1080.0f
 
@@ -123,6 +125,8 @@ package object gl {
 
     def center() = centerX().centerY()
 
+    def wrapper(padX: Float = 0.0f, padY: Float = 0.0f) = new ActorWrapper[A](actor, padX, padY)
+
     def onTouch(f: => Unit) = {
       actor.addListener(new EventListener {
         override def handle(event: Event) = event match {
@@ -135,4 +139,15 @@ package object gl {
       })
     }
   }
+}
+
+class ActorWrapper[A <: Actor](val actor: A, padX: Float = 0.0f, padY: Float = 0.0f) extends Group {
+  setX(actor.getX - padX)
+  setY(actor.getY - padY)
+  setWidth(actor.getWidth + (padX * 2.0f))
+  setHeight(actor.getHeight + (padY * 2.0f))
+  actor.setX(padX)
+  actor.setY(padY)
+
+  addActor(actor)
 }

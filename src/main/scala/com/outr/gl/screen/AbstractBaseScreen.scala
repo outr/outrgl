@@ -7,7 +7,6 @@ import com.badlogic.gdx.math.Interpolation
 import com.badlogic.gdx.scenes.scene2d.actions.Actions._
 import com.badlogic.gdx.{Gdx, Screen}
 import com.badlogic.gdx.scenes.scene2d.{Action, Stage}
-import com.badlogic.gdx.utils.viewport.ScreenViewport
 
 import com.outr.gl._
 import com.outr.gl.input.InputManager
@@ -29,7 +28,9 @@ trait AbstractBaseScreen extends Screen {
   private var updates = Map.empty[String, () => Any]
 
   def onResize(key: String, f: () => Any) = synchronized {
-    updates += key -> f
+    if (AutoAdjust) {
+      updates += key -> f
+    }
     f()
   }
 
