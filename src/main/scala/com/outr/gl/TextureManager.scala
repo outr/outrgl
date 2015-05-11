@@ -10,7 +10,7 @@ import com.badlogic.gdx.graphics.{Texture, Pixmap, Color}
  * @author Matt Hicks <matt@outr.com>
  */
 trait TextureManager {
-  def Pixel = TextureManager.Pixel
+  lazy val Pixel = new Texture(TextureManager.createPixelMap(Color.WHITE, 1, 1))
 
   protected def classpath(path: String, useMipMaps: Boolean = true) = {
     load(Gdx.files.classpath(path))
@@ -28,7 +28,6 @@ trait TextureManager {
 }
 
 object TextureManager {
-  lazy val Pixel = new Texture(createPixelMap(Color.WHITE, 1, 1))
   lazy val BlankCursor = createPixelMap(Color.CLEAR, 32, 32)
 
   private def createPixelMap(color: Color, width: Int, height: Int) = {

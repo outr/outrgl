@@ -13,12 +13,13 @@ import com.outr.gl.download.DownloadManager
  * @author Matt Hicks <matt@outr.com>
  */
 class SplashScreen(downloadManager: DownloadManager,
+                   textureManager: TextureManager,
                    loadingTextures: Array[TextureRegion],
-                   nextScreen: BaseScreen,
+                   nextScreen: => BaseScreen,
                    backgroundColor: Color = Color.WHITE,
                    maxConcurrent: Int = 4,
                    minimumDisplayTime: Long = 2000) extends BaseScreen {
-  lazy val background = new Image(TextureManager.Pixel).color(backgroundColor).width().height()
+  lazy val background = new Image(textureManager.Pixel).color(backgroundColor).width().height()
 
   lazy val loading = new AnimationActor(loadingTextures).center()
 
