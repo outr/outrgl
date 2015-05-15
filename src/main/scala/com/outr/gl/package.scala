@@ -12,6 +12,7 @@ import org.powerscala.Unique
  * @author Matt Hicks <matt@outr.com>
  */
 package object gl {
+  var ErrorHandler: Throwable => Unit = (t: Throwable) => t.printStackTrace()
   var AutoAdjust = false
 
   var VirtualWidth = 1920.0f
@@ -98,6 +99,16 @@ package object gl {
       actor
     }
 
+    def visible = {
+      actor.setVisible(true)
+      actor
+    }
+
+    def invisible = {
+      actor.setVisible(false)
+      actor
+    }
+
     def sized(width: Float, height: Float) = {
       this.width(width).height(height)
       actor
@@ -129,14 +140,37 @@ package object gl {
 
     def onTouch(f: => Unit) = {
       actor.addListener(new EventListener {
+        private var dragStartX = 0.0f
+        private var dragStartY = 0.0f
+        private var dragAdjust = 0.0f
+
         override def handle(event: Event) = event match {
-          case e: InputEvent if e.getType == InputEvent.Type.touchDown => {
-            f
+          case e: InputEvent => {
+            e.getType match {
+              case InputEvent.Type.touchDown => {
+                dragStartX = e.getStageX
+                dragStartY = e.getStageY
+                dragAdjust = 0.0f
+              }
+              case InputEvent.Type.touchDragged => {
+                val adjustX = math.abs(dragStartX - e.getStageX)
+                val adjustY = math.abs(dragStartY - e.getStageY)
+                dragAdjust += adjustX
+                dragAdjust += adjustY
+              }
+              case InputEvent.Type.touchUp if dragAdjust <= 12.0f => try {
+                f
+              } catch {
+                case t: Throwable => ErrorHandler(t)
+              }
+              case _ => // Ignore everything else
+            }
             true
           }
-          case _ => false
+          case _ => false // Ignore other events
         }
       })
+      actor
     }
   }
 }

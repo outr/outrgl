@@ -62,6 +62,7 @@ class InputManager private(stage: Stage) extends Listenable with Logging {
         }
         true
       }
+      case _ => false // Ignore other event types
     }
   })
 }
