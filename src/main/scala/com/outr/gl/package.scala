@@ -6,7 +6,11 @@ import com.badlogic.gdx.math.Interpolation
 import com.badlogic.gdx.scenes.scene2d._
 import com.badlogic.gdx.scenes.scene2d.actions.{AlphaAction, MoveToAction, RunnableAction}
 import com.outr.gl.screen.AbstractBaseScreen
-import org.powerscala.Unique
+import org.powerscala.event.Listenable
+import org.powerscala.{Storage, Unique}
+import org.powerscala.event.processor.UnitProcessor
+
+import scala.language.implicitConversions
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -59,7 +63,13 @@ package object gl {
   def adjustedWide(value: Float) = value * (ActualWidth / VirtualWidth)
   def adjustedTall(value: Float) = value * (ActualHeight / VirtualHeight)
 
-  implicit class AdjustedActor[A <: Actor](actor: A)(implicit screen: AbstractBaseScreen) {
+  implicit def actor2Adjusted[A <: Actor](actor: A)(implicit screen: AbstractBaseScreen): AdjustedActor[A] = Storage.getOrSet(actor, "adjustedActor", new AdjustedActor[A](actor))
+
+  class AdjustedActor[A <: Actor](actor: A)(implicit screen: AbstractBaseScreen) extends Listenable {
+    val touchDown = new UnitProcessor[InputEvent]("touchDown")
+    val touchDragged = new UnitProcessor[InputEvent]("touchDragged")
+    val touchUp = new UnitProcessor[InputEvent]("touchUp")
+
     if (actor.getName == null) {
       actor.setName(Unique())
     }
@@ -138,38 +148,108 @@ package object gl {
 
     def wrapper(padX: Float = 0.0f, padY: Float = 0.0f) = new ActorWrapper[A](actor, padX, padY)
 
-    def onTouch(f: => Unit) = {
+    private lazy val receiveEvents = {
       actor.addListener(new EventListener {
-        private var dragStartX = 0.0f
-        private var dragStartY = 0.0f
-        private var dragAdjust = 0.0f
-
         override def handle(event: Event) = event match {
           case e: InputEvent => {
             e.getType match {
-              case InputEvent.Type.touchDown => {
-                dragStartX = e.getStageX
-                dragStartY = e.getStageY
-                dragAdjust = 0.0f
-              }
-              case InputEvent.Type.touchDragged => {
-                val adjustX = math.abs(dragStartX - e.getStageX)
-                val adjustY = math.abs(dragStartY - e.getStageY)
-                dragAdjust += adjustX
-                dragAdjust += adjustY
-              }
-              case InputEvent.Type.touchUp if dragAdjust <= 12.0f => try {
-                f
-              } catch {
-                case t: Throwable => ErrorHandler(t)
-              }
-              case _ => // Ignore everything else
+              case InputEvent.Type.touchDown => touchDown.fire(e)
+              case InputEvent.Type.touchDragged => touchDragged.fire(e)
+              case InputEvent.Type.touchUp => touchUp.fire(e)
+              case _ => // Ignore other types
             }
             true
           }
-          case _ => false // Ignore other events
+          case _ => false // Ignore non-input events
         }
       })
+    }
+
+    def onTouch(f: => Unit) = {
+      receiveEvents               // Initialize events on this
+
+      var dragStartX = 0.0f
+      var dragStartY = 0.0f
+      var dragAdjust = 0.0f
+
+      touchDown.on {
+        case evt => {
+          dragStartX = evt.getStageX
+          dragStartY = evt.getStageY
+          dragAdjust = 0.0f
+        }
+      }
+      touchDragged.on {
+        case evt => {
+          val adjustX = math.abs(dragStartX - evt.getStageX)
+          val adjustY = math.abs(dragStartY - evt.getStageY)
+          dragAdjust += adjustX
+          dragAdjust += adjustY
+        }
+      }
+      touchUp.on {
+        case evt => if (dragAdjust <= 12.0f) try {
+          f
+        } catch {
+          case t: Throwable => ErrorHandler(t)
+        }
+      }
+      actor
+    }
+
+    def onSwipeRight(f: => Unit) = {
+      receiveEvents               // Initialize events on this
+
+      var dragStartX = 0.0f
+      var dragAdjust = 0.0f
+
+      touchDown.on {
+        case evt => {
+          dragStartX = evt.getStageX
+          dragAdjust = 0.0f
+        }
+      }
+      touchDragged.on {
+        case evt => {
+          val adjustX = math.abs(dragStartX - evt.getStageX)
+          dragAdjust += adjustX
+        }
+      }
+      touchUp.on {
+        case evt => if (dragAdjust >= 20.0f) try {
+          f
+        } catch {
+          case t: Throwable => ErrorHandler(t)
+        }
+      }
+      actor
+    }
+
+    def onSwipeLeft(f: => Unit) = {
+      receiveEvents               // Initialize events on this
+
+      var dragStartX = 0.0f
+      var dragAdjust = 0.0f
+
+      touchDown.on {
+        case evt => {
+          dragStartX = evt.getStageX
+          dragAdjust = 0.0f
+        }
+      }
+      touchDragged.on {
+        case evt => {
+          val adjustX = math.abs(dragStartX - evt.getStageX)
+          dragAdjust += adjustX
+        }
+      }
+      touchUp.on {
+        case evt => if (dragAdjust <= -20.0f) try {
+          f
+        } catch {
+          case t: Throwable => ErrorHandler(t)
+        }
+      }
       actor
     }
   }
