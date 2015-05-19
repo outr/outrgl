@@ -1,7 +1,8 @@
 package com.outr.gl.actor
 
 import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.scenes.scene2d.{Event, EventListener, InputEvent, Actor}
+import com.badlogic.gdx.scenes.scene2d._
+import com.outr.gl.input._
 import com.outr.gl.screen.AbstractBaseScreen
 import org.powerscala.Unique
 import org.powerscala.event.Listenable
@@ -12,9 +13,24 @@ import com.outr.gl._
  * @author Matt Hicks <matt@outr.com>
  */
 class EnhancedActor[A <: Actor](actor: A)(implicit screen: AbstractBaseScreen) extends Listenable {
-  val touchDown = new UnitProcessor[InputEvent]("touchDown")
-  val touchDragged = new UnitProcessor[InputEvent]("touchDragged")
-  val touchUp = new UnitProcessor[InputEvent]("touchUp")
+  lazy val keyDown = new UnitProcessor[KeyEvent]("keyDown")
+  lazy val keyUp = new UnitProcessor[KeyEvent]("keyUp")
+  lazy val keyTyped = new UnitProcessor[KeyEvent]("keyTyped")
+  lazy val mouseMoved = new UnitProcessor[MouseEvent]("mouseMoved")
+  lazy val touchDown = new UnitProcessor[MouseEvent]("touchDown")
+  lazy val touchDragged = new UnitProcessor[MouseEvent]("touchDragged")
+  lazy val touchUp = new UnitProcessor[MouseEvent]("touchUp")
+  lazy val scrolled = new UnitProcessor[ScrollEvent]("scrolled")
+  lazy val tapped = new UnitProcessor[MouseEvent]("tapped")
+  lazy val longPressed = new UnitProcessor[MouseEvent]("longPressed")
+  lazy val flung = new UnitProcessor[FlingEvent]("flung")
+  lazy val panned = new UnitProcessor[PanEvent]("panned")
+  lazy val panStopped = new UnitProcessor[MouseEvent]("panStopped")
+  lazy val zoomed = new UnitProcessor[ZoomEvent]("zoomed")
+  lazy val pinched = new UnitProcessor[PinchEvent]("pinched")
+
+  // Default to only passing events down
+  actor.setTouchable(Touchable.childrenOnly)
 
   if (actor.getName == null) {
     actor.setName(Unique())
@@ -99,108 +115,49 @@ class EnhancedActor[A <: Actor](actor: A)(implicit screen: AbstractBaseScreen) e
 
   def wrapper(padX: Float = 0.0f, padY: Float = 0.0f) = new ActorWrapper[A](actor, padX, padY)
 
-  private lazy val receiveEvents = {
-    actor.addListener(new EventListener {
-      override def handle(event: Event) = event match {
-        case e: InputEvent => {
-          e.getType match {
-            case InputEvent.Type.touchDown => touchDown.fire(e)
-            case InputEvent.Type.touchDragged => touchDragged.fire(e)
-            case InputEvent.Type.touchUp => touchUp.fire(e)
-            case _ => // Ignore other types
-          }
-          true
-        }
-        case _ => false // Ignore non-input events
-      }
-    })
-  }
-
   def onTouch(f: => Unit) = {
-    receiveEvents               // Initialize events on this
+    actor.setTouchable(Touchable.enabled)
 
-    var dragStartX = 0.0f
-    var dragStartY = 0.0f
-    var dragAdjust = 0.0f
-
-    touchDown.on {
-      case evt => {
-        dragStartX = evt.getStageX
-        dragStartY = evt.getStageY
-        dragAdjust = 0.0f
-      }
-    }
-    touchDragged.on {
-      case evt => {
-        val adjustX = math.abs(dragStartX - evt.getStageX)
-        val adjustY = math.abs(dragStartY - evt.getStageY)
-        dragAdjust += adjustX
-        dragAdjust += adjustY
-      }
-    }
-    touchUp.on {
-      case evt => if (dragAdjust <= 12.0f) try {
+    tapped.on {
+      case evt => try {
         f
       } catch {
         case t: Throwable => ErrorHandler(t)
       }
     }
+
     actor
   }
 
   def onSwipeRight(f: => Unit) = {
-    receiveEvents               // Initialize events on this
+    actor.setTouchable(Touchable.enabled)
 
-    var dragStartX = 0.0f
-    var dragAdjust = 0.0f
+    flung.on {
+      case evt => if (evt.velocityX > 50.0f && evt.velocityX > math.abs(evt.velocityY)) {
+        try {
+          f
+        } catch {
+          case t: Throwable => ErrorHandler(t)
+        }
+      }
+    }
 
-    touchDown.on {
-      case evt => {
-        dragStartX = evt.getStageX
-        dragAdjust = 0.0f
-      }
-    }
-    touchDragged.on {
-      case evt => {
-        val adjustX = math.abs(dragStartX - evt.getStageX)
-        dragAdjust += adjustX
-      }
-    }
-    touchUp.on {
-      case evt => if (dragAdjust >= 20.0f) try {
-        f
-      } catch {
-        case t: Throwable => ErrorHandler(t)
-      }
-    }
     actor
   }
 
   def onSwipeLeft(f: => Unit) = {
-    receiveEvents               // Initialize events on this
+    actor.setTouchable(Touchable.enabled)
 
-    var dragStartX = 0.0f
-    var dragAdjust = 0.0f
+    flung.on {
+      case evt => if (evt.velocityX < -50.0f && math.abs(evt.velocityX) > math.abs(evt.velocityY)) {
+        try {
+          f
+        } catch {
+          case t: Throwable => ErrorHandler(t)
+        }
+      }
+    }
 
-    touchDown.on {
-      case evt => {
-        dragStartX = evt.getStageX
-        dragAdjust = 0.0f
-      }
-    }
-    touchDragged.on {
-      case evt => {
-        val adjustX = math.abs(dragStartX - evt.getStageX)
-        dragAdjust += adjustX
-      }
-    }
-    touchUp.on {
-      case evt => if (dragAdjust <= -20.0f) try {
-        f
-      } catch {
-        case t: Throwable => ErrorHandler(t)
-      }
-    }
     actor
   }
 }

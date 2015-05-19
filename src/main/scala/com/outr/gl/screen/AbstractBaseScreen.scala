@@ -21,7 +21,7 @@ trait AbstractBaseScreen extends Screen {
   val cursor = Property[Pixmap](default = Some(null))
 
   def stage: Stage
-  lazy val input = InputManager(stage)
+  lazy val input = InputManager(this)
 
   private val initialized = new AtomicBoolean
 
@@ -43,8 +43,8 @@ trait AbstractBaseScreen extends Screen {
     if (initialized.compareAndSet(false, true)) {
       init()
     }
-    Gdx.input.setInputProcessor(stage)
-    InputManager.set(stage)
+    Gdx.input.setInputProcessor(input.processor)
+    InputManager.set(this)
     Gdx.input.setCursorImage(cursor(), 0, 0)
   }
 

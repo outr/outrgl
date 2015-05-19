@@ -5,10 +5,13 @@ import com.badlogic.gdx.input.GestureDetector
 import com.badlogic.gdx.input.GestureDetector.GestureListener
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d._
+import com.outr.gl.screen.AbstractBaseScreen
 import org.powerscala.event.Listenable
 import org.powerscala.event.processor.UnitProcessor
 import org.powerscala.log.Logging
 import org.powerscala.property.Property
+
+import com.outr.gl._
 
 import scala.annotation.tailrec
 
@@ -17,23 +20,25 @@ import scala.annotation.tailrec
  */
 object InputManager {
   val current = Property[InputManager](default = None)
-  private var map = Map.empty[Stage, InputManager]
+  private var map = Map.empty[AbstractBaseScreen, InputManager]
 
-  def set(stage: Stage) = current := apply(stage)
+  def set(screen: AbstractBaseScreen) = current := apply(screen)
 
-  def apply(stage: Stage) = synchronized {
-    map.get(stage) match {
+  def apply(screen: AbstractBaseScreen) = synchronized {
+    map.get(screen) match {
       case Some(im) => im
       case None => {
-        val im = new InputManager(stage)
-        map += stage -> im
+        val im = new InputManager(screen)
+        map += screen -> im
         im
       }
     }
   }
 }
 
-class InputManager private(val stage: Stage) extends Listenable with Logging {
+class InputManager private(val screen: AbstractBaseScreen) extends Listenable with Logging {
+  def stage = screen.stage
+
   private[input] val vector = new Vector2
   private[input] val keyEvent = new KeyEventImpl(this)
   private[input] val mouseEvent = new MouseEventImpl(this)
@@ -86,18 +91,22 @@ class InputManager private(val stage: Stage) extends Listenable with Logging {
   }
 
   @tailrec
-  final def findTouchable(actor: Actor): Option[Actor] = {
-    if (actor.isTouchable) {
-      Some(actor)
-    } else if (actor.getParent == null) {
-      None
+  final def findTouchable(actor: Actor): Actor = {
+    if (actor != null && actor.isTouchable) {
+      actor
+    } else if (actor == null || actor.getParent == null) {
+      stage.getRoot
     } else {
       findTouchable(actor.getParent)
     }
   }
+
+  // TODO: findFocused
 }
 
-private class ScreenInputProcessor(manager: InputManager) extends InputProcessor with GestureListener {
+private[input] class ScreenInputProcessor(manager: InputManager) extends InputProcessor with GestureListener {
+  implicit def abstractBaseScreen: AbstractBaseScreen = manager.screen
+
   private val gestures = new GestureDetector(this)
 
   // TODO: fire events on EnhancedActor as well
@@ -109,6 +118,8 @@ private class ScreenInputProcessor(manager: InputManager) extends InputProcessor
     manager.keyDown.fire(manager.keyEvent)
 
     gestures.keyDown(keyCode)
+    manager.stage.keyDown(keyCode)
+    // TODO: focused
 
     true
   }
@@ -120,6 +131,8 @@ private class ScreenInputProcessor(manager: InputManager) extends InputProcessor
     manager.keyUp.fire(manager.keyEvent)
 
     gestures.keyUp(keyCode)
+    manager.stage.keyUp(keyCode)
+    // TODO: focused
 
     true
   }
@@ -131,6 +144,8 @@ private class ScreenInputProcessor(manager: InputManager) extends InputProcessor
     manager.keyTyped.fire(manager.keyEvent)
 
     gestures.keyTyped(character)
+    manager.stage.keyTyped(character)
+    // TODO: focused
 
     true
   }
@@ -143,11 +158,8 @@ private class ScreenInputProcessor(manager: InputManager) extends InputProcessor
     manager._stageX = manager.vector.x
     manager._stageY = manager.vector.y
 
-    val actor = manager.stage.hit(manager.stageX, manager.stageY, true)
-    manager.findTouchable(actor) match {
-      case Some(a) => manager.atCursor = a
-      case None => manager.atCursor = manager.stage.getRoot
-    }
+    val actor = manager.stage.hit(manager.stageX, manager.stageY, false)
+    manager.atCursor = manager.findTouchable(actor)
 
     manager.vector.set(screenX, screenY)
     manager.atCursor.screenToLocalCoordinates(manager.vector)
@@ -160,6 +172,8 @@ private class ScreenInputProcessor(manager: InputManager) extends InputProcessor
     manager.mouseEvent()
     manager.mouseMoved.fire(manager.mouseEvent)
     gestures.mouseMoved(screenX, screenY)
+    manager.stage.mouseMoved(screenX, screenY)
+    manager.atCursor.mouseMoved.fire(manager.mouseEvent)
     true
   }
 
@@ -168,6 +182,9 @@ private class ScreenInputProcessor(manager: InputManager) extends InputProcessor
     manager.mouseEvent(pointer, button)
     manager.touchDown.fire(manager.mouseEvent)
     gestures.touchDown(screenX, screenY, pointer, button)
+    manager.stage.touchDown(screenX, screenY, pointer, button)
+    manager.atCursor.touchDown.fire(manager.mouseEvent)
+
     true
   }
 
@@ -176,6 +193,8 @@ private class ScreenInputProcessor(manager: InputManager) extends InputProcessor
     manager.mouseEvent(pointer)
     manager.touchDragged.fire(manager.mouseEvent)
     gestures.touchDragged(screenX, screenY, pointer)
+    manager.stage.touchDragged(screenX, screenY, pointer)
+    manager.atCursor.touchDragged.fire(manager.mouseEvent)
     true
   }
 
@@ -184,6 +203,8 @@ private class ScreenInputProcessor(manager: InputManager) extends InputProcessor
     manager.mouseEvent(pointer, button)
     manager.touchUp.fire(manager.mouseEvent)
     gestures.touchUp(screenX, screenY, pointer, button)
+    manager.stage.touchUp(screenX, screenY, pointer, button)
+    manager.atCursor.touchUp.fire(manager.mouseEvent)
     true
   }
 
@@ -191,6 +212,8 @@ private class ScreenInputProcessor(manager: InputManager) extends InputProcessor
     manager.scrollEvent(amount)
     manager.scrolled.fire(manager.scrollEvent)
     gestures.scrolled(amount)
+    manager.stage.scrolled(amount)
+    manager.atCursor.scrolled.fire(manager.scrollEvent)
     true
   }
 
@@ -200,36 +223,43 @@ private class ScreenInputProcessor(manager: InputManager) extends InputProcessor
 
   override def longPress(x: Float, y: Float) = {
     manager.longPressed.fire(manager.mouseEvent)
+    manager.atCursor.longPressed.fire(manager.mouseEvent)
     true
   }
 
   override def zoom(initialDistance: Float, distance: Float) = {
     manager.zoomed.fire(manager.zoomEvent(initialDistance, distance))
+    manager.atCursor.zoomed.fire(manager.zoomEvent)
     true
   }
 
   override def pan(x: Float, y: Float, deltaX: Float, deltaY: Float) = {
     manager.panned.fire(manager.panEvent(deltaX, deltaY))
+    manager.atCursor.panned.fire(manager.panEvent)
     true
   }
 
   override def tap(x: Float, y: Float, count: Int, button: Int) = {
     manager.tapped.fire(manager.mouseEvent)
+    manager.atCursor.tapped.fire(manager.mouseEvent)
     true
   }
 
   override def fling(velocityX: Float, velocityY: Float, button: Int) = {
     manager.flung.fire(manager.flingEvent(velocityX, velocityY, button))
+    manager.atCursor.flung.fire(manager.flingEvent)
     true
   }
 
   override def panStop(x: Float, y: Float, pointer: Int, button: Int) = {
     manager.panStopped.fire(manager.mouseEvent)
+    manager.atCursor.panStopped.fire(manager.mouseEvent)
     true
   }
 
   override def pinch(initialPointer1: Vector2, initialPointer2: Vector2, pointer1: Vector2, pointer2: Vector2) = {
     manager.pinched.fire(manager.pinchEvent(initialPointer1, initialPointer2, pointer1, pointer2))
+    manager.atCursor.pinched.fire(manager.pinchEvent)
     true
   }
 }
@@ -238,6 +268,8 @@ trait KeyEvent {
   def key: Key
   def focused: Option[Actor]
   def atCursor: Actor
+
+  override def toString = s"KeyEvent(key = $key, focused = $focused, atCursor = $atCursor)"
 }
 
 class KeyEventImpl(manager: InputManager, var key: Key = null) extends KeyEvent {
@@ -264,6 +296,8 @@ trait PointerEvent {
 trait MouseEvent extends PointerEvent {
   def pointer: Int
   def button: Int
+
+  override def toString = s"MouseEvent(pointer = $pointer, button = $button, actor = ${actor.getClass.getSimpleName}, localX = $localX, localY = $localY)"
 }
 
 class MouseEventImpl(val manager: InputManager) extends MouseEvent {
@@ -280,6 +314,8 @@ class MouseEventImpl(val manager: InputManager) extends MouseEvent {
 
 trait ScrollEvent extends PointerEvent {
   def amount: Int
+
+  override def toString = s"ScrollEvent(amount = $amount, actor = ${actor.getClass.getSimpleName}, localX = $localX, localY = $localY)"
 }
 
 class ScrollEventImpl(val manager: InputManager) extends ScrollEvent {
@@ -296,6 +332,8 @@ trait FlingEvent extends PointerEvent {
   def velocityX: Float
   def velocityY: Float
   def button: Int
+
+  override def toString = s"FlingEvent(velocityX = $velocityX, velocityY = $velocityY, button = $button, actor = ${actor.getClass.getSimpleName}, localX = $localX, localY = $localY)"
 }
 
 class FlingEventImpl(val manager: InputManager) extends FlingEvent {
@@ -314,6 +352,8 @@ class FlingEventImpl(val manager: InputManager) extends FlingEvent {
 trait PanEvent extends PointerEvent {
   def deltaX: Float
   def deltaY: Float
+
+  override def toString = s"PanEvent(deltaX = $deltaX, deltaY = $deltaY, actor = ${actor.getClass.getSimpleName}, localX = $localX, localY = $localY)"
 }
 
 class PanEventImpl(val manager: InputManager) extends PanEvent {
