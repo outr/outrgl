@@ -1,6 +1,6 @@
 package com.outr.gl.input
 
-import com.badlogic.gdx.InputProcessor
+import com.badlogic.gdx.{Gdx, InputProcessor}
 import com.badlogic.gdx.input.GestureDetector
 import com.badlogic.gdx.input.GestureDetector.GestureListener
 import com.badlogic.gdx.math.Vector2
@@ -111,40 +111,40 @@ private[input] class ScreenInputProcessor(manager: InputManager) extends InputPr
 
   // TODO: fire events on EnhancedActor as well
 
-  override def keyDown(keyCode: Int) = {
-    val key = Key.byCode(keyCode).getOrElse(throw new RuntimeException(s"Unable to find by keyCode: $keyCode."))
-    manager.keyEvent(key)
+  private def fireKeyEvent(keyCode: Int, processor: UnitProcessor[KeyEvent], functions: Function1[Int, Boolean]*) = {
+    Key.byCode(keyCode) match {
+      case Some(key) => {
+        manager.keyEvent(key)
 
-    manager.keyDown.fire(manager.keyEvent)
+        processor.fire(manager.keyEvent)
 
-    gestures.keyDown(keyCode)
-    manager.stage.keyDown(keyCode)
-    // TODO: focused
-
+        functions.foreach {
+          case f => f(keyCode)
+        }
+      }
+      case None => Gdx.app.log("unsupportedKeyCode", s"Unsupported keyCode: $keyCode in InputManager.${processor.name}.")
+    }
+    // TODO: support focused
     true
   }
 
-  override def keyUp(keyCode: Int) = {
-    val key = Key.byCode(keyCode).getOrElse(throw new RuntimeException(s"Unable to find by keyCode: $keyCode."))
-    manager.keyEvent(key)
+  override def keyDown(keyCode: Int) = fireKeyEvent(keyCode, manager.keyDown, gestures.keyDown, manager.stage.keyDown)
 
-    manager.keyUp.fire(manager.keyEvent)
-
-    gestures.keyUp(keyCode)
-    manager.stage.keyUp(keyCode)
-    // TODO: focused
-
-    true
-  }
+  override def keyUp(keyCode: Int) = fireKeyEvent(keyCode, manager.keyUp, gestures.keyUp, manager.stage.keyUp)
 
   override def keyTyped(character: Char) = {
-    val key = Key.byChar(character).getOrElse(throw new RuntimeException(s"Unable to find by character: $character."))
-    manager.keyEvent(key)
+    Key.byChar(character) match {
+      case Some(key) => {
+        manager.keyEvent(key)
 
-    manager.keyTyped.fire(manager.keyEvent)
+        manager.keyTyped.fire(manager.keyEvent)
 
-    gestures.keyTyped(character)
-    manager.stage.keyTyped(character)
+        gestures.keyTyped(character)
+        manager.stage.keyTyped(character)
+      }
+      case None => Gdx.app.log("unsupportedKeyChar", s"Unsupported keyChar: $character in InputManager.keyTyped.")
+    }
+
     // TODO: focused
 
     true
@@ -213,7 +213,9 @@ private[input] class ScreenInputProcessor(manager: InputManager) extends InputPr
     manager.scrolled.fire(manager.scrollEvent)
     gestures.scrolled(amount)
     manager.stage.scrolled(amount)
-    manager.atCursor.scrolled.fire(manager.scrollEvent)
+    if (manager.atCursor != null) {
+      manager.atCursor.scrolled.fire(manager.scrollEvent)
+    }
     true
   }
 
