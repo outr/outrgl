@@ -6,7 +6,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle
 import com.badlogic.gdx.scenes.scene2d.ui.{Image, Label}
 import com.badlogic.gdx.scenes.scene2d.{Event, EventListener, Group, InputEvent}
 import com.outr.gl.TextureManager
-import com.outr.gl.screen.{BaseScreen, MultiScreenApplication}
+import com.outr.gl.screen.{AbstractBaseScreen, MultiScreenApplication}
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -29,22 +29,25 @@ class ErrorDisplay(application: MultiScreenApplication, textures: => TextureMana
     background.setColor(Color.BLACK)
     background.setWidth(Gdx.graphics.getWidth.toFloat)
     background.setHeight(label.getPrefHeight + 20.0f)
-    val screen = application.screens.head.asInstanceOf[BaseScreen]
-
-    group = new Group()
-    group.addActor(background)
-    group.addActor(label)
-    group.addListener(new EventListener {
-      override def handle(event: Event) = event match {
-        case evt: InputEvent if evt.getType == InputEvent.Type.touchDown => {
-          removeError()
-          true
-        }
-        case _ => false // Ignore
+    application.screens.headOption match {
+      case Some(screen) => {
+        group = new Group()
+        group.addActor(background)
+        group.addActor(label)
+        group.addListener(new EventListener {
+          override def handle(event: Event) = event match {
+            case evt: InputEvent if evt.getType == InputEvent.Type.touchDown => {
+              removeError()
+              true
+            }
+            case _ => false // Ignore
+          }
+        })
+        screen.asInstanceOf[AbstractBaseScreen].stage.addActor(group)
+        t.printStackTrace()
       }
-    })
-    screen.stage.addActor(group)
-    t.printStackTrace()
+      case None => throw t
+    }
   }
 
   private def removeError() = if (group != null) {

@@ -2,6 +2,7 @@ package com.outr.gl.actor
 
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.scenes.scene2d._
+import com.badlogic.gdx.utils.Align
 import com.outr.gl.input._
 import com.outr.gl.screen.AbstractBaseScreen
 import org.powerscala.Unique
@@ -38,31 +39,57 @@ class EnhancedActor[A <: Actor](actor: A)(implicit screen: AbstractBaseScreen) e
 
   def id = actor.getName
 
-  def positioned(x: Float, y: Float, offsetFromHeight: Boolean = true) = this.x(x).y(y, offsetFromHeight)
+  def positioned(x: Float,
+                 y: Float,
+                 offsetFromHeight: Boolean = true,
+                 horizontal: Horizontal = Horizontal.Left,
+                 vertical: Vertical = Vertical.Default) = this.x(x, horizontal).y(y, offsetFromHeight, vertical)
 
-  def x(x: Float) = {
-    screen.onResize(s"$id:x", () => actor.setX(adjustedWide(x)))
-    actor
-  }
-
-  def y(y: Float, offsetFromHeight: Boolean = true) = {
-    screen.onResize(s"$id:y", () => {
-      if (offsetFromHeight) {
-        actor.setY(ActualHeight - adjustedTall(y) - actor.getHeight)
-      } else {
-        actor.setY(adjustedTall(y))
+  def x(x: Float, align: Horizontal = Horizontal.Left) = {
+    screen.onResize(s"$id:x", () => {
+      val alignOffset = align match {
+        case Horizontal.Left => 0.0f
+        case Horizontal.Center => actor.getWidth / 2.0f
+        case Horizontal.Right => actor.getWidth
       }
+      actor.setX(adjustedWide(screen, x) - alignOffset)
     })
     actor
   }
 
-  def right(x: Float) = {
-    screen.onResize(s"$id:x", () => actor.setX(adjustedWide(x) - actor.getWidth))
+  def y(y: Float, offsetFromHeight: Boolean = true, align: Vertical = Vertical.Default) = {
+    screen.onResize(s"$id:y", () => {
+      var offsetY = if (offsetFromHeight) {
+        ActualHeight - adjustedTall(screen, y)
+      } else {
+        adjustedTall(screen, y)
+      }
+      align match {
+        case Vertical.Default if offsetFromHeight => offsetY -= actor.getHeight
+        case Vertical.Default => // Ignore, no change
+        case Vertical.Top => offsetY -= actor.getHeight
+        case Vertical.Middle => offsetY -= (actor.getHeight / 2.0f)
+        case Vertical.Bottom => // Ignore, no change
+      }
+      actor.setY(offsetY)
+    })
     actor
   }
 
+  def center(x: Float) = this.x(x, Horizontal.Center)
+
+  def right(x: Float) = this.x(x, Horizontal.Right)
+
+  def middle(y: Float, offsetFromHeight: Boolean = true) = this.y(y, offsetFromHeight, Vertical.Middle)
+
   def alpha(a: Float) = {
     actor.getColor.a = a
+    actor
+  }
+
+  def rotate(degrees: Float) = {
+    actor.setOrigin(Align.center)
+    actor.setRotation(degrees)
     actor
   }
 
@@ -88,12 +115,12 @@ class EnhancedActor[A <: Actor](actor: A)(implicit screen: AbstractBaseScreen) e
   }
 
   def width(width: Float = VirtualWidth) = {
-    screen.onResize(s"$id:width", () => actor.setWidth(adjustedWide(width)))
+    screen.onResize(s"$id:width", () => actor.setWidth(adjustedWide(screen, width)))
     actor
   }
 
   def height(height: Float = VirtualHeight) = {
-    screen.onResize(s"$id:height", () => actor.setHeight(adjustedTall(height)))
+    screen.onResize(s"$id:height", () => actor.setHeight(adjustedTall(screen, height)))
     actor
   }
 

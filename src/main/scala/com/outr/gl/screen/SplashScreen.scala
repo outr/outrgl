@@ -12,7 +12,7 @@ import com.outr.gl.download.DownloadManager
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-class SplashScreen(downloadManager: DownloadManager,
+abstract class SplashScreen(downloadManager: DownloadManager,
                    textureManager: TextureManager,
                    loadingTextures: Array[TextureRegion],
                    nextScreen: => BaseScreen,
@@ -32,6 +32,7 @@ class SplashScreen(downloadManager: DownloadManager,
     stage.addActor(background)
     stage.addActor(loading)
 
+    downloadManager.init()
     downloadManager.tasks.foreach {
       case task => executor.submit(task)
     }

@@ -1,7 +1,9 @@
 package com.outr.gl.download
 
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.Input.Orientation
 import com.outr.gl._
+import com.outr.gl.screen.AbstractBaseScreen
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -11,9 +13,11 @@ trait DownloadManager {
   def tasks = _tasks
   def isEmpty = _tasks.isEmpty
 
-  protected def fonts(family: String, style: String, sizes: Int*) = {
+  def init(): Unit
+
+  protected def fonts(orientation: Orientation, family: String, style: String, sizes: Int*) = {
     sizes.foreach {
-      case size => font(family, style, fontSize(size))
+      case size => font(family, style, fontSize(size, orientation))
     }
   }
 

@@ -2,6 +2,7 @@ package com.outr.gl.screen
 
 import java.util.concurrent.atomic.AtomicBoolean
 
+import com.badlogic.gdx.Input.Orientation
 import com.badlogic.gdx.graphics.Pixmap
 import com.badlogic.gdx.math.Interpolation
 import com.badlogic.gdx.scenes.scene2d.actions.Actions._
@@ -21,6 +22,12 @@ trait AbstractBaseScreen extends Screen {
   val cursor = Property[Pixmap](default = Some(null))
 
   def stage: Stage
+  def app: MultiScreenApplication
+
+  def orientation = Orientation.Portrait
+  def portraitScreen: AbstractBaseScreen = this
+  def landscapeScreen: AbstractBaseScreen = this
+
   lazy val input = InputManager(this)
 
   private val initialized = new AtomicBoolean
@@ -39,10 +46,28 @@ trait AbstractBaseScreen extends Screen {
 
   def init(): Unit
 
+  private def initInternal() = {
+    val application = MultiScreenApplication()
+    application.orientation.change.on {
+      case evt => if (application.screens.contains(this)) {
+        val newScreen = evt.newValue match {
+          case Orientation.Portrait => portraitScreen
+          case Orientation.Landscape => landscapeScreen
+        }
+        if (newScreen != this) {
+          application.removeScreen(this)
+          application.addScreen(newScreen)
+        }
+      }
+    }
+  }
+
   override def show() = {
     if (initialized.compareAndSet(false, true)) {
       init()
+      initInternal()
     }
+    app.platform.orientation(orientation)
     Gdx.input.setInputProcessor(input.processor)
     InputManager.set(this)
     Gdx.input.setCursorImage(cursor(), 0, 0)

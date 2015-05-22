@@ -3,6 +3,7 @@ package com.outr.gl.screen
 import com.badlogic.gdx.Input.Orientation
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.{ApplicationListener, Gdx, Screen}
+import com.outr.gl.Platform
 import org.powerscala.property.Property
 
 import scala.annotation.tailrec
@@ -13,6 +14,8 @@ import scala.collection.mutable.ListBuffer
  */
 abstract class MultiScreenApplication extends ApplicationListener {
   MultiScreenApplication.instance = this
+
+  def platform: Platform
 
   private val _orientation = Property[Orientation](default = None)
   val orientation = _orientation.readOnlyView
@@ -60,7 +63,7 @@ abstract class MultiScreenApplication extends ApplicationListener {
 
     val accX = math.abs(math.round(Gdx.input.getAccelerometerX))
     val accY = math.abs(math.round(Gdx.input.getAccelerometerY))
-    _orientation := (if (accY > accX) Orientation.Portrait else Orientation.Landscape)
+    _orientation := (if (accY > accX || accX == accY) Orientation.Portrait else Orientation.Landscape)
 
     withScreens(renderFunction)
   }

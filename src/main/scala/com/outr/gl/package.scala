@@ -1,12 +1,13 @@
 package com.outr
 
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.Input.Orientation
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.math.Interpolation
 import com.badlogic.gdx.scenes.scene2d._
 import com.badlogic.gdx.scenes.scene2d.actions.{AlphaAction, MoveToAction, RunnableAction}
 import com.outr.gl.actor.EnhancedActor
-import com.outr.gl.screen.AbstractBaseScreen
+import com.outr.gl.screen.{MultiScreenApplication, AbstractBaseScreen}
 import org.powerscala.event.Listenable
 import org.powerscala.{Storage, Unique}
 import org.powerscala.event.processor.UnitProcessor
@@ -20,18 +21,30 @@ package object gl {
   var ErrorHandler: Throwable => Unit = (t: Throwable) => t.printStackTrace()
   var AutoAdjust = false
 
-  var VirtualWidth = 1920.0f
-  var VirtualHeight = 1080.0f
+  var VirtualPortraitWide = 1920.0f
+  var VirtualPortraitTall = 1080.0f
 
-  var WidthOverride: Option[Float] = None
-  var HeightOverride: Option[Float] = None
+  def VirtualWidth(implicit screen: AbstractBaseScreen) = oriented(screen, VirtualPortraitWide, VirtualPortraitTall)
+  def VirtualHeight(implicit screen: AbstractBaseScreen) = oriented(screen, VirtualPortraitTall, VirtualPortraitWide)
 
-  def ActualWidth = WidthOverride.getOrElse(Gdx.graphics.getWidth.toFloat)
-  def ActualHeight = HeightOverride.getOrElse(Gdx.graphics.getHeight.toFloat)
+  var ActualPortraitWidthOverride: Option[Float] = None
+  var ActualPortraitHeightOverride: Option[Float] = None
 
-  private def modifier = ActualWidth / VirtualWidth
+  def ActualWidthOverride(implicit screen: AbstractBaseScreen) = oriented(screen, ActualPortraitWidthOverride, ActualPortraitHeightOverride)
+  def ActualHeightOverride(implicit screen: AbstractBaseScreen) = oriented(screen, ActualPortraitHeightOverride, ActualPortraitWidthOverride)
 
-  def fontSize(originalSize: Int) = math.round(originalSize * modifier)
+  def ActualMax = math.max(Gdx.graphics.getWidth, Gdx.graphics.getHeight).toFloat
+  def ActualMin = math.min(Gdx.graphics.getWidth, Gdx.graphics.getHeight).toFloat
+
+  def ActualWidth(implicit screen: AbstractBaseScreen) = ActualWidthOverride(screen).getOrElse(oriented(screen, ActualMin, ActualMax))
+  def ActualHeight(implicit screen: AbstractBaseScreen) = ActualHeightOverride(screen).getOrElse(oriented(screen, ActualMax, ActualMin))
+
+  private def modifier(orientation: Orientation) = orientation match {
+    case Orientation.Portrait => ActualMin / VirtualPortraitWide
+    case Orientation.Landscape => ActualMax / VirtualPortraitTall
+  }
+
+  def fontSize(originalSize: Int, orientation: Orientation) = math.round(originalSize * modifier(orientation))
 
   def function(f: => Unit) = {
     val runnable = new Runnable {
@@ -61,8 +74,13 @@ package object gl {
     action
   }
 
-  def adjustedWide(value: Float) = value * (ActualWidth / VirtualWidth)
-  def adjustedTall(value: Float) = value * (ActualHeight / VirtualHeight)
+  def oriented[T](screen: AbstractBaseScreen, portrait: T, landscape: T, orientation: Option[Orientation] = None) = orientation.getOrElse(screen.orientation) match {
+    case Orientation.Portrait => portrait
+    case Orientation.Landscape => landscape
+  }
+
+  def adjustedWide(screen: AbstractBaseScreen, value: Float) = oriented(screen, value * (ActualWidth(screen) / VirtualWidth(screen)), value * (ActualHeight(screen) / VirtualHeight(screen)))
+  def adjustedTall(screen: AbstractBaseScreen, value: Float) = oriented(screen, value * (ActualHeight(screen) / VirtualHeight(screen)), value * (ActualWidth(screen) / VirtualWidth(screen)))
 
   implicit def actor2Enhanced[A <: Actor](actor: A)(implicit screen: AbstractBaseScreen): EnhancedActor[A] = {
     Storage.getOrSet(actor, "adjustedActor", new EnhancedActor[A](actor))
