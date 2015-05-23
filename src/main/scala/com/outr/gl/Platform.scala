@@ -6,6 +6,6 @@ import com.badlogic.gdx.Input.Orientation
  * @author Matt Hicks <matt@outr.com>
  */
 trait Platform {
-  def orientation: Orientation
+  var orientationOverride: Option[Orientation] = None
   def orientation(orientation: Orientation): Unit
 }

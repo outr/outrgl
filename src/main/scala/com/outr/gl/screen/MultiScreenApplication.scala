@@ -61,9 +61,14 @@ abstract class MultiScreenApplication extends ApplicationListener {
   override def render() = {
     Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
 
-    val accX = math.abs(math.round(Gdx.input.getAccelerometerX))
-    val accY = math.abs(math.round(Gdx.input.getAccelerometerY))
-    _orientation := (if (accY > accX || accX == accY) Orientation.Portrait else Orientation.Landscape)
+    platform.orientationOverride match {
+      case Some(o) => _orientation := o
+      case None => {
+        val accX = math.abs(math.round(Gdx.input.getAccelerometerX))
+        val accY = math.abs(math.round(Gdx.input.getAccelerometerY))
+        _orientation := (if (accY > accX || accX == accY) Orientation.Portrait else Orientation.Landscape)
+      }
+    }
 
     withScreens(renderFunction)
   }
