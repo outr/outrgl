@@ -10,7 +10,7 @@ import com.badlogic.gdx.{Gdx, Screen}
 import com.badlogic.gdx.scenes.scene2d.{Action, Stage}
 
 import com.outr.gl._
-import com.outr.gl.input.InputManager
+import com.outr.gl.input.{Key, InputManager}
 import org.powerscala.property.Property
 
 /**
@@ -58,6 +58,13 @@ trait AbstractBaseScreen extends Screen {
           application.removeScreen(this)
           application.addScreen(newScreen)
         }
+      }
+    }
+    input.keyDown.on {
+      case evt => if (evt.key == Key.P) {
+        application.platform.orientationOverride = Some(Orientation.Portrait)
+      } else if (evt.key == Key.L) {
+        application.platform.orientationOverride = Some(Orientation.Landscape)
       }
     }
   }
