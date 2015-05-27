@@ -9,7 +9,7 @@ object OUTRGLBuild extends Build {
   lazy val desktop = project("desktop").dependsOn(core).withDependencies(gdx.desktop)
   lazy val android = project("android").dependsOn(core).withDependencies(google.android, gdx.android)
   lazy val ios = project("ios").dependsOn(core).withDependencies(gdx.ios)
-  lazy val tools = project("tools").dependsOn(desktop)
+  lazy val tools = project("tools").dependsOn(desktop).withDependencies(gdx.tools)
 
   private def project(projectName: String) = Project(id = projectName, base = file(projectName)).settings(
     name := s"${Details.name}-$projectName",
@@ -89,6 +89,7 @@ object Dependencies {
     val desktop = "com.badlogicgames.gdx" % "gdx-backend-lwjgl" % gdxVersion
     val android = "com.badlogicgames.gdx" % "gdx-backend-android" % gdxVersion
     val ios = "com.badlogicgames.gdx" % "gdx-backend-robovm" % gdxVersion
+    val tools = "com.badlogicgames.gdx" % "gdx-tools" % gdxVersion
   }
   object powerscala {
     val property = "org.powerscala" %% "powerscala-property" % powerscalaVersion
