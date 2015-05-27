@@ -15,7 +15,9 @@ import scala.collection.mutable.ListBuffer
 abstract class MultiScreenApplication extends ApplicationListener {
   MultiScreenApplication.instance = this
 
-  def platform: Platform
+  var orientationOverride: Option[Orientation] = None
+
+  def platform: Platform[_]
 
   private val _orientation = Property[Orientation](default = None)
   val orientation = _orientation.readOnlyView
@@ -61,7 +63,7 @@ abstract class MultiScreenApplication extends ApplicationListener {
   override def render() = {
     Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
 
-    platform.orientationOverride match {
+    orientationOverride match {
       case Some(o) => _orientation := o
       case None => {
         val accX = math.abs(math.round(Gdx.input.getAccelerometerX))

@@ -14,7 +14,7 @@ import com.outr.gl.screen.{AbstractBaseScreen, MultiScreenApplication}
 class ErrorDisplay(application: MultiScreenApplication, textures: => TextureManager, style: => LabelStyle) extends Function1[Throwable, Unit] {
   private var group: Group = _
 
-  override def apply(t: Throwable) = {
+  override def apply(t: Throwable) = try {
     removeError()
 
     val message = s"$t\n${t.getStackTrace.mkString("\n")}"
@@ -48,6 +48,8 @@ class ErrorDisplay(application: MultiScreenApplication, textures: => TextureMana
       }
       case None => throw t
     }
+  } catch {
+    case exc: Throwable => throw new RuntimeException(s"Error while attempting to create visual error.", exc)
   }
 
   private def removeError() = if (group != null) {

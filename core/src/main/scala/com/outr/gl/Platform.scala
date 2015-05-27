@@ -1,11 +1,13 @@
 package com.outr.gl
 
 import com.badlogic.gdx.Input.Orientation
+import com.outr.gl.screen.MultiScreenApplication
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-trait Platform {
-  var orientationOverride: Option[Orientation] = None
+trait Platform[Config] {
+  def application: MultiScreenApplication
   def orientation(orientation: Orientation): Unit
+  def init(config: Config): Unit
 }

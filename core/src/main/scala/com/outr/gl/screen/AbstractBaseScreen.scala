@@ -60,11 +60,12 @@ trait AbstractBaseScreen extends Screen {
         }
       }
     }
+    // TODO: make this part of a application listener and only on desktop - CTRL + instead?
     input.keyDown.on {
       case evt => if (evt.key == Key.P) {
-        application.platform.orientationOverride = Some(Orientation.Portrait)
+        application.orientationOverride = Some(Orientation.Portrait)
       } else if (evt.key == Key.L) {
-        application.platform.orientationOverride = Some(Orientation.Landscape)
+        application.orientationOverride = Some(Orientation.Landscape)
       }
     }
   }
