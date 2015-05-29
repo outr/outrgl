@@ -1,4 +1,4 @@
-package com.outr.gl.desktop
+package com.outr.gl.lwjgl
 
 import com.badlogic.gdx.Input.Orientation
 import com.badlogic.gdx.backends.lwjgl.{LwjglApplication, LwjglApplicationConfiguration}
@@ -7,7 +7,7 @@ import com.outr.gl.Platform
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-trait DesktopPlatform extends App with Platform[LwjglApplicationConfiguration] {
+trait LWJGLPlatform extends App with Platform[LwjglApplicationConfiguration] {
   def title = getClass.getSimpleName
 
   val config = new LwjglApplicationConfiguration

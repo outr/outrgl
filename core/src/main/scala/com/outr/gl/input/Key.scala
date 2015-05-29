@@ -60,6 +60,7 @@ object Key extends Enumerated[Key] {
   case object Backspace extends Key(67)
   case object Escape extends Key(131)
   case object Backslash extends Key(73, Some('\\'))
+  case object Space extends Key(62, Some(' '))
 
   // Special keys
   case object Play extends Key(-1)
@@ -68,7 +69,11 @@ object Key extends Enumerated[Key] {
   case object Previous extends Key(-1)
   case object Stop extends Key(-1)
 
-  def byCode(code: Int) = codes.get(code)
+  def byCode(code: Int) = {
+    val key = codes.get(code)
+    println(s"byCode: $code, key: $key")
+    key
+  }
   def byChar(char: Char) = chars.get(char)
 
   val values = findValues.toVector

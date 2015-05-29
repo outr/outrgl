@@ -21,14 +21,27 @@ package object gl {
   var ErrorHandler: Throwable => Unit = (t: Throwable) => t.printStackTrace()
   var AutoAdjust = false
 
-  var VirtualPortraitWide = 1920.0f
-  var VirtualPortraitTall = 1080.0f
+  private var VirtualPortraitWide = 1920.0f
+  private var VirtualPortraitTall = 1080.0f
+  private var ActualPortraitWidthOverride: Option[Float] = None
+  private var ActualPortraitHeightOverride: Option[Float] = None
+
+  def virtualPortrait(wide: Float, tall: Float, actualWideOverride: Option[Float] = None, actualTallOverride: Option[Float] = None) = {
+    VirtualPortraitWide = wide
+    VirtualPortraitTall = tall
+    ActualPortraitWidthOverride = actualWideOverride
+    ActualPortraitHeightOverride = actualTallOverride
+  }
+
+  def virtualLandscape(wide: Float, tall: Float, actualWideOverride: Option[Float] = None, actualTallOverride: Option[Float] = None) = {
+    VirtualPortraitWide = tall
+    VirtualPortraitTall = wide
+    ActualPortraitWidthOverride = actualTallOverride
+    ActualPortraitHeightOverride = actualWideOverride
+  }
 
   def VirtualWidth(implicit screen: AbstractBaseScreen) = oriented(screen, VirtualPortraitWide, VirtualPortraitTall)
   def VirtualHeight(implicit screen: AbstractBaseScreen) = oriented(screen, VirtualPortraitTall, VirtualPortraitWide)
-
-  var ActualPortraitWidthOverride: Option[Float] = None
-  var ActualPortraitHeightOverride: Option[Float] = None
 
   def ActualWidthOverride(implicit screen: AbstractBaseScreen) = oriented(screen, ActualPortraitWidthOverride, ActualPortraitHeightOverride)
   def ActualHeightOverride(implicit screen: AbstractBaseScreen) = oriented(screen, ActualPortraitHeightOverride, ActualPortraitWidthOverride)
@@ -39,12 +52,16 @@ package object gl {
   def ActualWidth(implicit screen: AbstractBaseScreen) = ActualWidthOverride(screen).getOrElse(oriented(screen, ActualMin, ActualMax))
   def ActualHeight(implicit screen: AbstractBaseScreen) = ActualHeightOverride(screen).getOrElse(oriented(screen, ActualMax, ActualMin))
 
-  private def modifier(orientation: Orientation) = orientation match {
-    case Orientation.Portrait => ActualMin / VirtualPortraitWide
-    case Orientation.Landscape => ActualMax / VirtualPortraitTall
+  private def modifierWide(orientation: Orientation) = orientation match {
+    case Orientation.Portrait => ActualPortraitWidthOverride.getOrElse(ActualMin) / VirtualPortraitWide
+    case Orientation.Landscape => ActualPortraitHeightOverride.getOrElse(ActualMax) / VirtualPortraitTall
+  }
+  private def modifierTall(orientation: Orientation) = orientation match {
+    case Orientation.Portrait => ActualPortraitHeightOverride.getOrElse(ActualMax) / VirtualPortraitTall
+    case Orientation.Landscape => ActualPortraitWidthOverride.getOrElse(ActualMin) / VirtualPortraitWide
   }
 
-  def fontSize(originalSize: Int, orientation: Orientation) = math.round(originalSize * modifier(orientation))
+  def fontSize(originalSize: Int, orientation: Orientation) = math.round(originalSize * modifierWide(orientation))
 
   def function(f: => Unit) = {
     val runnable = new Runnable {
@@ -79,8 +96,8 @@ package object gl {
     case Orientation.Landscape => landscape
   }
 
-  def adjustedWide(screen: AbstractBaseScreen, value: Float) = oriented(screen, value * (ActualWidth(screen) / VirtualWidth(screen)), value * (ActualHeight(screen) / VirtualHeight(screen)))
-  def adjustedTall(screen: AbstractBaseScreen, value: Float) = oriented(screen, value * (ActualHeight(screen) / VirtualHeight(screen)), value * (ActualWidth(screen) / VirtualWidth(screen)))
+  def adjustedWide(orientation: Orientation, value: Float) = value * modifierWide(orientation)
+  def adjustedTall(orientation: Orientation, value: Float) = value * modifierTall(orientation)
 
   implicit def actor2Enhanced[A <: Actor](actor: A)(implicit screen: AbstractBaseScreen): EnhancedActor[A] = {
     Storage.getOrSet(actor, "adjustedActor", new EnhancedActor[A](actor))

@@ -24,7 +24,7 @@ trait AbstractBaseScreen extends Screen {
   def stage: Stage
   def app: MultiScreenApplication
 
-  def orientation = Orientation.Portrait
+  def orientation = app.defaultOrientation
   def portraitScreen: AbstractBaseScreen = this
   def landscapeScreen: AbstractBaseScreen = this
 

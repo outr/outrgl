@@ -52,7 +52,7 @@ class EnhancedActor[A <: Actor](actor: A)(implicit screen: AbstractBaseScreen) e
         case Horizontal.Center => actor.getWidth / 2.0f
         case Horizontal.Right => actor.getWidth
       }
-      actor.setX(adjustedWide(screen, x) - alignOffset)
+      actor.setX(adjustedWide(screen.orientation, x) - alignOffset)
     })
     actor
   }
@@ -60,9 +60,9 @@ class EnhancedActor[A <: Actor](actor: A)(implicit screen: AbstractBaseScreen) e
   def y(y: Float, offsetFromHeight: Boolean = true, align: Vertical = Vertical.Default) = {
     screen.onResize(s"$id:y", () => {
       var offsetY = if (offsetFromHeight) {
-        ActualHeight - adjustedTall(screen, y)
+        ActualHeight - adjustedTall(screen.orientation, y)
       } else {
-        adjustedTall(screen, y)
+        adjustedTall(screen.orientation, y)
       }
       align match {
         case Vertical.Default if offsetFromHeight => offsetY -= actor.getHeight
@@ -115,12 +115,12 @@ class EnhancedActor[A <: Actor](actor: A)(implicit screen: AbstractBaseScreen) e
   }
 
   def width(width: Float = VirtualWidth) = {
-    screen.onResize(s"$id:width", () => actor.setWidth(adjustedWide(screen, width)))
+    screen.onResize(s"$id:width", () => actor.setWidth(adjustedWide(screen.orientation, width)))
     actor
   }
 
   def height(height: Float = VirtualHeight) = {
-    screen.onResize(s"$id:height", () => actor.setHeight(adjustedTall(screen, height)))
+    screen.onResize(s"$id:height", () => actor.setHeight(adjustedTall(screen.orientation, height)))
     actor
   }
 

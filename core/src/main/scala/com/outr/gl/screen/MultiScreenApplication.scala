@@ -17,6 +17,7 @@ abstract class MultiScreenApplication extends ApplicationListener {
 
   var orientationOverride: Option[Orientation] = None
 
+  def defaultOrientation: Orientation
   def platform: Platform[_]
 
   private val _orientation = Property[Orientation](default = None)
