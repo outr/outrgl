@@ -3,11 +3,13 @@ package com.outr
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input.Orientation
 import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.math.Interpolation
 import com.badlogic.gdx.scenes.scene2d._
 import com.badlogic.gdx.scenes.scene2d.actions.{AlphaAction, MoveToAction, RunnableAction}
 import com.outr.gl.actor.EnhancedActor
 import com.outr.gl.screen.{MultiScreenApplication, AbstractBaseScreen}
+import com.outr.gl.task.FutureObject
 import org.powerscala.event.Listenable
 import org.powerscala.{Storage, Unique}
 import org.powerscala.event.processor.UnitProcessor
@@ -102,4 +104,6 @@ package object gl {
   implicit def actor2Enhanced[A <: Actor](actor: A)(implicit screen: AbstractBaseScreen): EnhancedActor[A] = {
     Storage.getOrSet(actor, "adjustedActor", new EnhancedActor[A](actor))
   }
+
+  implicit def future2BitmapFont(f: FutureObject[BitmapFont]): BitmapFont = f()
 }

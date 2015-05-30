@@ -1,19 +1,26 @@
 package com.outr.gl.screen
 
+import java.util.concurrent.ConcurrentLinkedQueue
+
 import com.badlogic.gdx.Input.Orientation
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.{ApplicationListener, Gdx, Screen}
 import com.outr.gl.Platform
+import org.powerscala.concurrent.Time
 import org.powerscala.property.Property
 
 import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer
+
+import com.outr.gl._
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
 abstract class MultiScreenApplication extends ApplicationListener {
   MultiScreenApplication.instance = this
+
+  private var lastRender = 0L
 
   var orientationOverride: Option[Orientation] = None
 
@@ -25,6 +32,28 @@ abstract class MultiScreenApplication extends ApplicationListener {
 
   private val _screens = ListBuffer.empty[Screen]
   def screens = _screens.toList
+
+  private val workQueue = new ConcurrentLinkedQueue[() => Unit]()
+
+  def invokeLater(f: => Unit) = workQueue.add(() => f)
+
+  def invokeAndWait[T](f: => T) = {
+    var result: Option[T] = None
+    workQueue.add(() => {
+      result = Some(f)
+    })
+    Time.waitFor(10.0, errorOnTimeout = true) {
+      result.nonEmpty
+    }
+    result.get
+  }
+
+  def waitForRender() = {
+    val previousRender = lastRender
+    Time.waitFor(10.0, errorOnTimeout = true) {
+      previousRender != lastRender
+    }
+  }
 
   def addScreen(screen: Screen) = synchronized {
     _screens -= screen
@@ -74,6 +103,21 @@ abstract class MultiScreenApplication extends ApplicationListener {
     }
 
     withScreens(renderFunction)
+    processWork()
+    lastRender = Gdx.graphics.getFrameId
+  }
+
+  @tailrec
+  private def processWork(): Unit = workQueue.poll() match {
+    case null => // Finished
+    case f => {
+      try {
+        f()
+      } catch {
+        case t: Throwable => ErrorHandler(t)
+      }
+      processWork()
+    }
   }
 
   private val resizeFunction = (s: Screen) => s.resize(Gdx.graphics.getWidth, Gdx.graphics.getHeight)
