@@ -117,14 +117,13 @@ private[input] class ScreenInputProcessor(manager: InputManager) extends InputPr
         manager.keyEvent(key)
 
         processor.fire(manager.keyEvent)
-
-        functions.foreach {
-          case f => f(keyCode)
-        }
       }
       case None => Gdx.app.log("unsupportedKeyCode", s"Unsupported keyCode: $keyCode in InputManager.${processor.name}.")
     }
     // TODO: support focused
+    functions.foreach {
+      case f => f(keyCode)
+    }
     true
   }
 
@@ -140,12 +139,12 @@ private[input] class ScreenInputProcessor(manager: InputManager) extends InputPr
         manager.keyTyped.fire(manager.keyEvent)
 
         gestures.keyTyped(character)
-        manager.stage.keyTyped(character)
       }
       case None => Gdx.app.log("unsupportedKeyChar", s"Unsupported keyChar: $character in InputManager.keyTyped.")
     }
 
     // TODO: focused
+    manager.stage.keyTyped(character)
 
     true
   }

@@ -30,7 +30,7 @@ trait TextureManager {
 object TextureManager {
   lazy val BlankCursor = createPixelMap(Color.CLEAR, 32, 32)
 
-  private def createPixelMap(color: Color, width: Int, height: Int) = {
+  def createPixelMap(color: Color, width: Int, height: Int) = {
     val pixmap = new Pixmap(width, height, Format.RGBA8888)
     pixmap.setColor(color)
     pixmap.fillRectangle(0, 0, width, height)
