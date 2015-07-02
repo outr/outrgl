@@ -13,4 +13,10 @@ class TextInput(placeholder: Label, style: TextFieldStyle) extends TextField("",
   })
 
   private def updatePlaceholder() = placeholder.setVisible(getText.isEmpty)
+
+  override def focus() = {
+    super.focus()
+
+    getOnscreenKeyboard.show(true)
+  }
 }

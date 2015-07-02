@@ -69,11 +69,7 @@ object Key extends Enumerated[Key] {
   case object Previous extends Key(-1)
   case object Stop extends Key(-1)
 
-  def byCode(code: Int) = {
-    val key = codes.get(code)
-    println(s"byCode: $code, key: $key")
-    key
-  }
+  def byCode(code: Int) = codes.get(code)
   def byChar(char: Char) = chars.get(char)
 
   val values = findValues.toVector

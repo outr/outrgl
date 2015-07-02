@@ -14,6 +14,7 @@ trait FocusSupport {
   private val _focused = Property[Boolean](default = Some(false))
   val focused = _focused.readOnlyView
   def hasFocus = focused()
+  def focus() = getStage.setKeyboardFocus(this)
 
   addListener(new FocusListener {
     override def keyboardFocusChanged(event: FocusEvent, actor: Actor, focused: Boolean) = {
