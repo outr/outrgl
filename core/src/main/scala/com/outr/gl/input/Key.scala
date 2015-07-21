@@ -18,12 +18,18 @@ sealed abstract class Key private(val code: Int, val character: Option[Char] = N
       case None => // No character
     }
   }
+
+  def is(key: Key) = key.code == code || key.character == character
 }
 
 object Key extends Enumerated[Key] {
   private var codes = Map.empty[Int, Key]
   private var chars = Map.empty[Char, Key]
 
+  case object Up extends Key(19)
+  case object Left extends Key(21)
+  case object Down extends Key(20)
+  case object Right extends Key(22)
   case object A extends Key(29, Some('a'))
   case object B extends Key(30, Some('b'))
   case object C extends Key(31, Some('c'))
@@ -50,17 +56,15 @@ object Key extends Enumerated[Key] {
   case object X extends Key(52, Some('x'))
   case object Y extends Key(53, Some('y'))
   case object Z extends Key(54, Some('z'))
-  case object Up extends Key(19)
-  case object Left extends Key(21)
-  case object Down extends Key(20)
-  case object Right extends Key(22)
+  case object Period extends Key(56, Some('.'))
+  case object Space extends Key(62, Some(' '))
+  case object Enter extends Key(66, Some('\r'))
+  case object Backspace extends Key(67)
+  case object Backslash extends Key(73, Some('\\'))
+  case object At extends Key(77, Some('@'))
   case object PageUp extends Key(92)
   case object PageDown extends Key(93)
-  case object Enter extends Key(66)
-  case object Backspace extends Key(67)
   case object Escape extends Key(131)
-  case object Backslash extends Key(73, Some('\\'))
-  case object Space extends Key(62, Some(' '))
 
   // Special keys
   case object Play extends Key(-1)

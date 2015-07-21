@@ -82,12 +82,46 @@ class InputManager private(val screen: AbstractBaseScreen) extends Listenable wi
 
   val processor = new ScreenInputProcessor(this)
 
-  def simulate(key: Key) = {
-    keyEvent(key)
+  init()
 
-    keyDown.fire(keyEvent)
-    keyTyped.fire(keyEvent)
-    keyUp.fire(keyEvent)
+  protected def init() = {
+    implicit def thisScreen: AbstractBaseScreen = screen
+
+    keyDown.on {
+      case evt => focused.get match {
+        case Some(a) => a.keyDown.fire(evt)
+        case None => // Nothing focused
+      }
+    }
+    keyUp.on {
+      case evt => focused.get match {
+        case Some(a) => a.keyUp.fire(evt)
+        case None => // Nothing focused
+      }
+    }
+    keyTyped.on {
+      case evt => focused.get match {
+        case Some(a) => a.keyTyped.fire(evt)
+        case None => // Nothing focused
+      }
+    }
+  }
+
+  def simulate(key: Key): Unit = {
+//    keyEvent(key)
+//
+//    keyDown.fire(keyEvent)
+//    keyTyped.fire(keyEvent)
+//    keyUp.fire(keyEvent)
+
+    Gdx.input.getInputProcessor.keyDown(key.code)
+    Gdx.input.getInputProcessor.keyTyped(key.character.getOrElse(0))
+    Gdx.input.getInputProcessor.keyUp(key.code)
+  }
+
+  def simulate(text: String): Unit = {
+    val keys = text.map(c => Key.byChar(c).getOrElse(throw new RuntimeException(s"No character support for '$c' (${c.toInt}).")))
+    keys.foreach(simulate)
   }
 
   @tailrec
@@ -100,8 +134,6 @@ class InputManager private(val screen: AbstractBaseScreen) extends Listenable wi
       findTouchable(actor.getParent)
     }
   }
-
-  // TODO: findFocused
 }
 
 private[input] class ScreenInputProcessor(manager: InputManager) extends InputProcessor with GestureListener {
@@ -118,7 +150,7 @@ private[input] class ScreenInputProcessor(manager: InputManager) extends InputPr
 
         processor.fire(manager.keyEvent)
       }
-      case None => //Gdx.app.log("unsupportedKeyCode", s"Unsupported keyCode: $keyCode in InputManager.${processor.name}.")
+      case None => Gdx.app.log("unsupportedKeyCode", s"Unsupported keyCode: $keyCode in InputManager.${processor.name}.")
     }
     functions.foreach {
       case f => f(keyCode)
@@ -139,7 +171,7 @@ private[input] class ScreenInputProcessor(manager: InputManager) extends InputPr
 
         gestures.keyTyped(character)
       }
-      case None => //Gdx.app.log("unsupportedKeyChar", s"Unsupported keyChar: $character in InputManager.keyTyped.")
+      case None => Gdx.app.log("unsupportedKeyChar", s"Unsupported keyChar: $character (${character.toInt}) in InputManager.keyTyped.")
     }
 
     // TODO: focused

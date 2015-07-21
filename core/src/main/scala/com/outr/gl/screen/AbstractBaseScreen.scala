@@ -92,11 +92,16 @@ trait AbstractBaseScreen extends Screen {
     }
   }
 
-  override def render(delta: Float) = {
+  override def render(delta: Float) = try {
     stage.act(delta)
     stage.getBatch.enableBlending()
     stage.getBatch.setColor(1.0f, 1.0f, 1.0f, 1.0f)
     stage.draw()
+  } catch {
+    case t: Throwable => {
+      MultiScreenApplication.handleException(t)
+      MultiScreenApplication().dispose()
+    }
   }
 
   override def pause() = {}

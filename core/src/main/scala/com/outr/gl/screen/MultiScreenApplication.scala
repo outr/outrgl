@@ -137,4 +137,6 @@ object MultiScreenApplication {
   private var instance: MultiScreenApplication = _
 
   def apply() = instance
+
+  def handleException(t: Throwable) = com.outr.gl.ErrorHandler(t)
 }

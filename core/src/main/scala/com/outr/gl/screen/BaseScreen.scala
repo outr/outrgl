@@ -18,6 +18,10 @@ trait BaseScreen extends AbstractBaseScreen {
   }
 
   def nextRender(f: => Unit) = Gdx.app.postRunnable(new Runnable {
-    override def run(): Unit = f
+    override def run(): Unit = try {
+      f
+    } catch {
+      case t: Throwable => MultiScreenApplication.handleException(t)
+    }
   })
 }

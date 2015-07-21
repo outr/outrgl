@@ -17,7 +17,7 @@ abstract class SplashScreen(taskManager: TaskManager,
                             nextScreen: => BaseScreen,
                             backgroundColor: Color = Color.WHITE,
                             maxConcurrent: Int = 4,
-                            minimumDisplayTime: Long = 2000) extends BaseScreen {
+                            minimumDisplayTime: Long = 1000) extends BaseScreen {
   lazy val background = new Image(textureManager.Pixel).color(backgroundColor).width().height()
 
   lazy val loading = new AnimationActor(loadingTextures).center()
