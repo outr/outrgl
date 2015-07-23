@@ -57,6 +57,7 @@ object Key extends Enumerated[Key] {
   case object Y extends Key(53, Some('y'))
   case object Z extends Key(54, Some('z'))
   case object Period extends Key(56, Some('.'))
+  case object Tab extends Key(61, Some('\t'))
   case object Space extends Key(62, Some(' '))
   case object Enter extends Key(66, Some('\r'))
   case object Backspace extends Key(67)
