@@ -74,7 +74,7 @@ object Details {
   val developerURL = "http://matthicks.com"
 
   val sbtVersion = "0.13.8"
-  val scalaVersion = "2.11.6"
+  val scalaVersion = "2.11.7"
 }
 
 object Dependencies {

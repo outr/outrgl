@@ -2,6 +2,7 @@ package com.outr.gl.actor
 
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.scenes.scene2d._
+import com.badlogic.gdx.scenes.scene2d.ui.Widget
 import com.badlogic.gdx.utils.Align
 import com.outr.gl.input._
 import com.outr.gl.screen.AbstractBaseScreen
@@ -74,6 +75,14 @@ class EnhancedActor[A <: Actor](actor: A)(implicit screen: AbstractBaseScreen) e
       actor.setY(offsetY)
     })
     actor
+  }
+
+  def packed = {
+    actor match {
+      case w: Widget => w.pack()
+      case _ => // Not packable
+    }
+    this
   }
 
   def center(x: Float) = this.x(x, Horizontal.Center)
