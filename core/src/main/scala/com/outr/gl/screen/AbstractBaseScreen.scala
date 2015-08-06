@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.Pixmap
 import com.badlogic.gdx.math.Interpolation
 import com.badlogic.gdx.scenes.scene2d.actions.Actions._
 import com.badlogic.gdx.{Gdx, Screen}
-import com.badlogic.gdx.scenes.scene2d.{Action, Stage}
+import com.badlogic.gdx.scenes.scene2d.{Actor, Action, Stage}
 
 import com.outr.gl._
 import com.outr.gl.input.{Key, InputManager}
@@ -40,6 +40,28 @@ trait AbstractBaseScreen extends Screen {
     }
     f()
   }
+
+  def onTouch(actors: Actor*)(f: => Unit) = {
+    actors.foreach {
+      case a => a.onTouch(f)
+    }
+  }
+
+  def onEnter(actors: Actor*)(f: => Unit) = {
+    actors.foreach {
+      case a => a.keyTyped.on {
+        case evt => if (evt.key.is(Key.Enter)) f
+      }
+    }
+  }
+
+  def nextRender(f: => Unit) = Gdx.app.postRunnable(new Runnable {
+    override def run(): Unit = try {
+      f
+    } catch {
+      case t: Throwable => MultiScreenApplication.handleException(t)
+    }
+  })
 
   private var _transitioning = false
   def transitioning = _transitioning
