@@ -142,6 +142,7 @@ class FunctionalTask(val manager: TaskManager, f: () => Unit) extends Task {
 
 class FutureObject[T](val manager: TaskManager, f: () => T) extends Task {
   private var result: Option[T] = None
+  private var next: Option[T => Unit] = None
 
   def apply(maxWait: Double = 60.0) = {
     Time.waitFor(maxWait, errorOnTimeout = true) {
@@ -153,6 +154,17 @@ class FutureObject[T](val manager: TaskManager, f: () => T) extends Task {
   def get() = result
 
   override def invoke() = {
-    result = Some(f())
+    val r = f()
+    result = Some(r)
+    next match {
+      case Some(n) => n(r)
+      case None => // Nothing to do next
+    }
+  }
+
+  def andThen(f: T => Unit) = if (result.nonEmpty) {
+    f(result.get)
+  } else {
+    next = Some(f)
   }
 }
