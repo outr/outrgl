@@ -1,19 +1,17 @@
 package com.outr.gl.actor
 
-import com.badlogic.gdx.scenes.scene2d.{Actor, Group}
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane
-import com.outr.gl._
+import com.badlogic.gdx.scenes.scene2d.{Actor, Group}
 import com.outr.gl.screen.AbstractBaseScreen
 import org.powerscala.concurrent.AtomicBoolean
 import org.powerscala.property.Property
+
 import scala.collection.JavaConverters._
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-class SnapScrollPane[T <: Actor](screen: AbstractBaseScreen, widget: Group, itemHeight: Float, adjustmentMultiplier: Float = 1.0f) extends ScrollPane(widget) {
-  implicit def abstractBaseScreen: AbstractBaseScreen = screen
-
+class SnapScrollPane[T <: Actor](screen: AbstractBaseScreen, widget: Group, itemHeight: Float) extends ScrollPane(widget) {
   private val firstOffset = (itemHeight / 2.0f) - itemHeight * 0.3f
 
   val selectedIndex = Property[Int](default = Some(0))

@@ -5,14 +5,12 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import com.badlogic.gdx.Input.Orientation
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.{ApplicationListener, Gdx, Screen}
-import com.outr.gl.Platform
+import com.outr.gl.{Platform, _}
 import org.powerscala.concurrent.Time
 import org.powerscala.property.Property
 
 import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer
-
-import com.outr.gl._
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -130,7 +128,10 @@ abstract class MultiScreenApplication extends ApplicationListener {
   override def resume() = withScreens(resumeFunction)
 
   private val disposeFunction = (s: Screen) => s.dispose()
-  override def dispose() = withScreens(disposeFunction)
+  override def dispose() = {
+    withScreens(disposeFunction)
+    Gdx.app.exit()
+  }
 }
 
 object MultiScreenApplication {

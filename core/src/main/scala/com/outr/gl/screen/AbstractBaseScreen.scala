@@ -5,12 +5,10 @@ import java.util.concurrent.atomic.AtomicBoolean
 import com.badlogic.gdx.Input.Orientation
 import com.badlogic.gdx.graphics.Pixmap
 import com.badlogic.gdx.math.Interpolation
-import com.badlogic.gdx.scenes.scene2d.actions.Actions._
+import com.badlogic.gdx.scenes.scene2d.{Action, Actor, Stage}
 import com.badlogic.gdx.{Gdx, Screen}
-import com.badlogic.gdx.scenes.scene2d.{Actor, Action, Stage}
-
 import com.outr.gl._
-import com.outr.gl.input.{Key, InputManager}
+import com.outr.gl.input.{InputManager, Key}
 import org.powerscala.property.Property
 
 /**

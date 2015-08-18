@@ -2,17 +2,14 @@ package com.outr
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input.Orientation
-import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.math.Interpolation
 import com.badlogic.gdx.scenes.scene2d._
-import com.badlogic.gdx.scenes.scene2d.actions.{AlphaAction, MoveToAction, RunnableAction}
+import com.badlogic.gdx.scenes.scene2d.actions.{Actions, AlphaAction, MoveToAction, RunnableAction, SizeToAction}
 import com.outr.gl.actor.EnhancedActor
-import com.outr.gl.screen.{MultiScreenApplication, AbstractBaseScreen}
+import com.outr.gl.screen.AbstractBaseScreen
 import com.outr.gl.task.FutureObject
-import org.powerscala.event.Listenable
-import org.powerscala.{Storage, Unique}
-import org.powerscala.event.processor.UnitProcessor
+import org.powerscala.Storage
 
 import scala.language.implicitConversions
 
@@ -84,6 +81,16 @@ package object gl {
     action
   }
 
+  def resize(actor: Actor, width: Float, height: Float, duration: Float, interpolation: Interpolation) = {
+    val action = new SizeToAction
+    action.setWidth(width)
+    action.setHeight(height)
+    action.setDuration(duration)
+    action.setInterpolation(interpolation)
+    action.setTarget(actor)
+    action
+  }
+
   def fade(actor: Actor, to: Float, duration: Float, interpolation: Interpolation) = {
     val action = new AlphaAction
     action.setAlpha(to)
@@ -92,6 +99,9 @@ package object gl {
     action.setTarget(actor)
     action
   }
+
+  def sequence(actions: Action*) = Actions.sequence(actions: _*)
+  def parallel(actions: Action*) = Actions.parallel(actions: _*)
 
   def oriented[T](screen: AbstractBaseScreen, portrait: T, landscape: T, orientation: Option[Orientation] = None) = orientation.getOrElse(screen.orientation) match {
     case Orientation.Portrait => portrait
