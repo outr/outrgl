@@ -47,6 +47,7 @@ class InputManager private(val screen: AbstractBaseScreen) extends Listenable wi
   private[input] val panEvent = new PanEventImpl(this)
   private[input] val zoomEvent = new ZoomEventImpl(this)
   private[input] val pinchEvent = new PinchEventImpl(this)
+  private[input] var _touching: Option[Actor] = None
   private[input] var _screenX: Int = _
   private[input] var _screenY: Int = _
   private[input] var _stageX: Float = _
@@ -54,6 +55,7 @@ class InputManager private(val screen: AbstractBaseScreen) extends Listenable wi
   private[input] var _localX: Float = _
   private[input] var _localY: Float = _
 
+  def touching = _touching
   def screenX = _screenX
   def screenY = _screenY
   def stageX = _stageX
@@ -87,6 +89,12 @@ class InputManager private(val screen: AbstractBaseScreen) extends Listenable wi
   protected def init() = {
     implicit def thisScreen: AbstractBaseScreen = screen
 
+    touchDown.on { evt =>
+      _touching = Option(evt.actor)
+    }
+    touchUp.on { evt =>
+      _touching = None
+    }
     keyDown.on {
       case evt => focused.get match {
         case Some(a) => a.keyDown.fire(evt)

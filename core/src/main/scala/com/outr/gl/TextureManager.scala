@@ -6,7 +6,11 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.files.FileHandle
 import com.badlogic.gdx.graphics.Pixmap.Format
 import com.badlogic.gdx.graphics.Texture.TextureFilter
+import com.badlogic.gdx.graphics.g2d.ParticleEmitter.GradientColorValue
+import com.badlogic.gdx.graphics.g2d.{Batch, Sprite}
 import com.badlogic.gdx.graphics.{Texture, Pixmap, Color}
+import com.badlogic.gdx.scenes.scene2d.ui.Image
+import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable
 import com.outr.gl.screen.AbstractBaseScreen
 import com.outr.gl.task.TaskManager
 import org.powerscala.event.Listenable
@@ -70,9 +74,54 @@ trait TextureManager extends Listenable {
       }
     }
   }
+
+  def createGradient(width: Int, height: Int, topLeft: Color, topRight: Color, bottomLeft: Color, bottomRight: Color) = {
+    val drawable = new GradientSpriteDrawable(this)
+    drawable.topLeft = topLeft
+    drawable.topRight = topRight
+    drawable.bottomLeft = bottomLeft
+    drawable.bottomRight = bottomRight
+    drawable.setMinWidth(width)
+    drawable.setMinHeight(height)
+    val image = new Image(drawable)
+    image.setWidth(width)
+    image.setHeight(height)
+    image
+  }
 }
 
 case class Loaded(url: String, texture: Texture)
+
+class GradientSpriteDrawable(manager: TextureManager) extends SpriteDrawable(new Sprite(manager.Pixel)) {
+  val C1 = 2
+  val C2 = 7
+  val C3 = 12
+  val C4 = 17
+
+  var topLeft: Color = _
+  var topRight: Color = _
+  var bottomLeft: Color = _
+  var bottomRight: Color = _
+
+  private val tmpColor = new Color()
+
+  override def draw(batch: Batch, x: Float, y: Float, originX: Float, originY: Float, width: Float, height: Float, scaleX: Float, scaleY: Float, rotation: Float): Unit = {
+    val sprite = getSprite
+    sprite.setOrigin(originX, originY)
+    sprite.setRotation(rotation)
+    sprite.setScale(scaleX, scaleY)
+    sprite.setBounds(x, y, width, height)
+
+    val vertices = sprite.getVertices
+    val batchColor = batch.getColor
+    vertices(C1) = tmpColor.set(bottomLeft).mul(batchColor).toFloatBits
+    vertices(C2) = tmpColor.set(topLeft).mul(batchColor).toFloatBits
+    vertices(C3) = tmpColor.set(topRight).mul(batchColor).toFloatBits
+    vertices(C4) = tmpColor.set(bottomRight).mul(batchColor).toFloatBits
+
+    sprite.draw(batch)
+  }
+}
 
 object TextureManager {
   lazy val BlankCursor = createPixelMap(Color.CLEAR, 32, 32)
