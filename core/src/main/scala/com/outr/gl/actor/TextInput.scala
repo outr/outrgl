@@ -12,7 +12,7 @@ class TextInput(placeholder: Label, style: TextFieldStyle) extends TextField("",
     override def keyTyped(textField: TextField, c: Char) = updatePlaceholder()
   })
 
-  private def updatePlaceholder() = placeholder.setVisible(getText.isEmpty)
+  private def updatePlaceholder() = if (placeholder != null) placeholder.setVisible(getText.isEmpty)
 
   override def focus() = {
     super.focus()
