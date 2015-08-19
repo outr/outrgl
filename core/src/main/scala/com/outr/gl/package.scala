@@ -5,7 +5,7 @@ import com.badlogic.gdx.Input.Orientation
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.math.Interpolation
 import com.badlogic.gdx.scenes.scene2d._
-import com.badlogic.gdx.scenes.scene2d.actions.{Actions, AlphaAction, MoveToAction, RunnableAction, SizeToAction}
+import com.badlogic.gdx.scenes.scene2d.actions.{Actions, AlphaAction, DelayAction, MoveToAction, RunnableAction, SizeToAction}
 import com.outr.gl.actor.EnhancedActor
 import com.outr.gl.screen.AbstractBaseScreen
 import com.outr.gl.task.FutureObject
@@ -99,6 +99,8 @@ package object gl {
     action.setTarget(actor)
     action
   }
+
+  def delay(duration: Float) = new DelayAction(duration)
 
   def sequence(actions: Action*) = Actions.sequence(actions: _*)
   def parallel(actions: Action*) = Actions.parallel(actions: _*)
