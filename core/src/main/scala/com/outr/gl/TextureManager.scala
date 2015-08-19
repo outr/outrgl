@@ -1,14 +1,12 @@
 package com.outr.gl
 
-import java.util.concurrent.ConcurrentHashMap
-
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.files.FileHandle
 import com.badlogic.gdx.graphics.Pixmap.Format
 import com.badlogic.gdx.graphics.Texture.TextureFilter
-import com.badlogic.gdx.graphics.g2d.ParticleEmitter.GradientColorValue
 import com.badlogic.gdx.graphics.g2d.{Batch, Sprite}
-import com.badlogic.gdx.graphics.{Texture, Pixmap, Color}
+import com.badlogic.gdx.graphics.{Color, Pixmap, Texture}
+import com.badlogic.gdx.scenes.scene2d.Group
 import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable
 import com.outr.gl.screen.AbstractBaseScreen
@@ -87,6 +85,75 @@ trait TextureManager extends Listenable {
     image.setWidth(width)
     image.setHeight(height)
     image
+  }
+
+  private var circleTextures = Map.empty[Int, Texture]
+
+  def createCircle(radius: Int) = synchronized {
+    val texture = circleTextures.get(radius) match {
+      case Some(t) => t
+      case None => {
+        val size = radius * 2
+        val pixmap = new Pixmap(size, size, Format.RGBA8888)
+        pixmap.setColor(Color.WHITE)
+        pixmap.fillCircle(radius, radius, radius)
+        val t = new Texture(pixmap)
+        circleTextures += radius -> t
+        t
+      }
+    }
+    new Image(texture)
+  }
+}
+
+class RoundedGroup(background: Color, radius: Int, manager: TextureManager)(implicit screen: AbstractBaseScreen) extends Group {
+  private val circleTopLeft = manager.createCircle(radius).color(background)
+  private val circleTopRight = manager.createCircle(radius).color(background)
+  private val circleBottomLeft = manager.createCircle(radius).color(background)
+  private val circleBottomRight = manager.createCircle(radius).color(background)
+  private val backgroundImage1 = new Image(manager.Pixel).color(background)
+  private val backgroundImage2 = new Image(manager.Pixel).color(background)
+
+  addActor(backgroundImage1)
+  addActor(backgroundImage2)
+  addActor(circleTopLeft)
+  addActor(circleTopRight)
+  addActor(circleBottomLeft)
+  addActor(circleBottomRight)
+
+  override def setX(x: Float): Unit = {
+    super.setX(x)
+
+    updateBackground()
+  }
+
+  override def setY(y: Float): Unit = {
+    super.setY(y)
+
+    updateBackground()
+  }
+
+  override def setWidth(width: Float): Unit = {
+    super.setWidth(width)
+
+    updateBackground()
+  }
+
+  override def setHeight(height: Float): Unit = {
+    super.setHeight(height)
+
+    updateBackground()
+  }
+
+  def updateBackground() = {
+    circleTopLeft.setPosition(-radius, getHeight - radius)
+    circleTopRight.setPosition(getWidth - radius, getHeight - radius)
+    circleBottomLeft.setPosition(-radius, -radius)
+    circleBottomRight.setPosition(getWidth - radius, -radius)
+    backgroundImage1.setPosition(-radius, 0)
+    backgroundImage1.setSize(getWidth + (radius * 2), getHeight)
+    backgroundImage2.setPosition(0, -radius)
+    backgroundImage2.setSize(getWidth, getHeight + (radius * 2))
   }
 }
 
