@@ -104,6 +104,7 @@ package object gl {
 
   def sequence(actions: Action*) = Actions.sequence(actions: _*)
   def parallel(actions: Action*) = Actions.parallel(actions: _*)
+  def forever(action: Action) = Actions.forever(action)
 
   def oriented[T](screen: AbstractBaseScreen, portrait: T, landscape: T, orientation: Option[Orientation] = None) = orientation.getOrElse(screen.orientation) match {
     case Orientation.Portrait => portrait
