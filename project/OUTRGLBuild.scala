@@ -78,7 +78,7 @@ object Details {
 }
 
 object Dependencies {
-  val gdxVersion = "1.6.4"
+  val gdxVersion = "1.6.5"
   val powerscalaVersion = "1.6.10"
 
   object google {
