@@ -6,7 +6,7 @@ import com.badlogic.gdx.Input.Orientation
 import com.badlogic.gdx.graphics.Pixmap
 import com.badlogic.gdx.math.Interpolation
 import com.badlogic.gdx.scenes.scene2d.{Action, Actor, Stage}
-import com.badlogic.gdx.{Gdx, Screen}
+import com.badlogic.gdx.{Gdx, Input, Screen}
 import com.outr.gl._
 import com.outr.gl.input.{InputManager, Key}
 import org.powerscala.property.Property
@@ -80,12 +80,13 @@ trait AbstractBaseScreen extends Screen {
         }
       }
     }
-    // TODO: make this part of a application listener and only on desktop - CTRL + instead?
     input.keyDown.on {
-      case evt => if (evt.key == Key.P) {
-        application.orientationOverride = Some(Orientation.Portrait)
-      } else if (evt.key == Key.L) {
-        application.orientationOverride = Some(Orientation.Landscape)
+      case evt => if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) || Gdx.input.isKeyPressed(Input.Keys.CONTROL_RIGHT)) {
+        if (evt.key == Key.P) {
+          application.orientationOverride = Some(Orientation.Portrait)
+        } else if (evt.key == Key.L) {
+          application.orientationOverride = Some(Orientation.Landscape)
+        }
       }
     }
   }
