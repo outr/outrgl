@@ -99,7 +99,7 @@ trait AbstractBaseScreen extends Screen {
     app.platform.orientation(orientation)
     Gdx.input.setInputProcessor(input.processor)
     InputManager.set(this)
-    Gdx.input.setCursorImage(cursor(), 0, 0)
+//    Gdx.input.setCursorImage(cursor(), 0, 0)      // TODO: determine if this is needed
   }
 
   override def resize(width: Int, height: Int) = {

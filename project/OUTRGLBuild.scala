@@ -1,5 +1,5 @@
+import sbt.Keys._
 import sbt._
-import Keys._
 
 object OUTRGLBuild extends Build {
   import Dependencies._
@@ -73,12 +73,12 @@ object Details {
   val developerName = "Matt Hicks"
   val developerURL = "http://matthicks.com"
 
-  val sbtVersion = "0.13.8"
+  val sbtVersion = "0.13.9"
   val scalaVersion = "2.11.7"
 }
 
 object Dependencies {
-  val gdxVersion = "1.6.5"
+  val gdxVersion = "1.7.1"
   val powerscalaVersion = "1.6.10"
 
   object google {
