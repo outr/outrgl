@@ -15,7 +15,7 @@ import scala.collection.mutable
  */
 class NotificationMessage(style: LabelStyle, foreground: Color, background: Color, manager: TextureManager, showTime: Float = 5.0f)
                          (implicit screen: AbstractBaseScreen) extends RoundedGroup(background, 10, manager)(screen) {
-  val label = new Label("", style)
+  val label = new Label("", style).color(foreground)
 
   addActor(label)
   setVisible(false)
