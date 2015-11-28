@@ -2,17 +2,16 @@ package com.outr.gl.task
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input.Orientation
-import com.badlogic.gdx.Net.{HttpResponse, HttpResponseListener, HttpMethods}
+import com.badlogic.gdx.Net.{HttpMethods, HttpResponse, HttpResponseListener}
 import com.badlogic.gdx.files.FileHandle
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.Texture.TextureFilter
-import com.badlogic.gdx.graphics.g2d.{TextureRegion, BitmapFont}
+import com.badlogic.gdx.graphics.g2d.{BitmapFont, TextureRegion}
 import com.badlogic.gdx.net.HttpRequestBuilder
-import com.badlogic.gdx.utils.async.{AsyncTask, AsyncExecutor}
+import com.badlogic.gdx.utils.async.{AsyncExecutor, AsyncTask}
+import com.outr.gl._
 import com.outr.gl.screen.MultiScreenApplication
 import org.powerscala.concurrent.{AtomicInt, Time}
-
-import com.outr.gl._
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -72,7 +71,7 @@ class TaskManager(application: MultiScreenApplication,
 
   def download(url: String, local: FileHandle, autoAdd: Boolean = true): FutureObject[FileHandle] = futureTask(() => {
     if (!local.exists()) {
-      val request = new HttpRequestBuilder().newRequest().method(HttpMethods.GET).url(url).build()
+      val request = new HttpRequestBuilder().newRequest().method(HttpMethods.GET).timeout(15000).url(url).build()
       var finished = false
       Gdx.net.sendHttpRequest(request, new HttpResponseListener {
         override def handleHttpResponse(httpResponse: HttpResponse) = {
