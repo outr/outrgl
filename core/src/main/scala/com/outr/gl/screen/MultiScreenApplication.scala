@@ -88,21 +88,39 @@ abstract class MultiScreenApplication extends ApplicationListener {
   }
 
   private val renderFunction = (s: Screen) => s.render(Gdx.graphics.getDeltaTime)
+  private var orientationChangeStart: Option[Long] = None
   override def render() = {
     Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
 
     orientationOverride match {
-      case Some(o) => _orientation := o
+      case Some(o) => orientationChange(o)
       case None => {
         val accX = math.abs(math.round(Gdx.input.getAccelerometerX))
         val accY = math.abs(math.round(Gdx.input.getAccelerometerY))
-        _orientation := (if (accY > accX || accX == accY) Orientation.Portrait else Orientation.Landscape)
+        orientationChange(if (accY > accX || accX == accY) Orientation.Portrait else Orientation.Landscape)
       }
     }
 
     withScreens(renderFunction)
     processWork()
     lastRender = Gdx.graphics.getFrameId
+  }
+
+  private val orientationDelay = 500L
+  private def orientationChange(orientation: Orientation): Unit = {
+    val current = _orientation()
+    if (current != orientation) {   // Different
+      val time = System.currentTimeMillis()
+      orientationChangeStart match {
+        case Some(start) => if (time - start > orientationDelay) {
+          _orientation := orientation
+          orientationChangeStart = None
+        }
+        case None => orientationChangeStart = Some(time)
+      }
+    } else {
+      orientationChangeStart = None
+    }
   }
 
   @tailrec
