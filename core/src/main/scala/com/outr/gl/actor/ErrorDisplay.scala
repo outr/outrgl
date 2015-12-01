@@ -29,7 +29,7 @@ class ErrorDisplay(application: MultiScreenApplication, textures: => TextureMana
     background.setColor(Color.BLACK)
     background.setWidth(Gdx.graphics.getWidth.toFloat)
     background.setHeight(label.getPrefHeight + 20.0f)
-    application.screens.headOption match {
+    application.activeScreens.headOption match {
       case Some(screen) => {
         group = new Group()
         group.addActor(background)

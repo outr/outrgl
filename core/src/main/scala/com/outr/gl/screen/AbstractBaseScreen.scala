@@ -69,7 +69,7 @@ trait AbstractBaseScreen extends Screen {
   private def initInternal() = {
     val application = MultiScreenApplication()
     application.orientation.change.on {
-      case evt => if (application.screens.contains(this)) {
+      case evt => if (application.activeScreens.contains(this)) {
         val newScreen = evt.newValue match {
           case Orientation.Portrait => portraitScreen
           case Orientation.Landscape => landscapeScreen

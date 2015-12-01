@@ -10,6 +10,7 @@ import org.powerscala.concurrent.Time
 import org.powerscala.property.Property
 
 import scala.annotation.tailrec
+import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 /**
@@ -28,8 +29,26 @@ abstract class MultiScreenApplication extends ApplicationListener {
   private val _orientation = Property[Orientation](default = None)
   val orientation = _orientation.readOnlyView
 
-  private val _screens = ListBuffer.empty[Screen]
-  def screens = _screens.toList
+  private val _activeScreens = ListBuffer.empty[Screen]
+  def activeScreens = _activeScreens.toList
+
+  private val _screens = mutable.HashMap.empty[String, Screen]
+
+  def screen[S <: Screen](name: String, loader: => S): S = synchronized {
+    _screens.get(name) match {
+      case Some(s) => s.asInstanceOf[S]
+      case None => {
+        val s: S = loader
+        _screens.put(name, s)
+        s
+      }
+    }
+  }
+
+  def disposeAllScreens() = synchronized {
+    _screens.values.foreach(s => s.dispose())
+    _screens.clear()
+  }
 
   private val workQueue = new ConcurrentLinkedQueue[() => Unit]()
 
@@ -54,33 +73,33 @@ abstract class MultiScreenApplication extends ApplicationListener {
   }
 
   def addScreen(screen: Screen) = synchronized {
-    _screens -= screen
-    _screens += screen
+    _activeScreens -= screen
+    _activeScreens += screen
     screen.show()
     screen.resize(Gdx.graphics.getWidth, Gdx.graphics.getHeight)
   }
 
   def insertScreen(index: Int, screen: Screen) = synchronized {
-    _screens -= screen
-    _screens.insert(index, screen)
+    _activeScreens -= screen
+    _activeScreens.insert(index, screen)
     screen.show()
     screen.resize(Gdx.graphics.getWidth, Gdx.graphics.getHeight)
   }
 
   def removeScreen(screen: Screen) = synchronized {
     screen.hide()
-    _screens -= screen
+    _activeScreens -= screen
   }
 
   def setScreen(screen: Screen) = synchronized {
-    screens.foreach {
+    activeScreens.foreach {
       case s => removeScreen(s)
     }
     addScreen(screen)
   }
 
   @tailrec
-  final def withScreens(f: Screen => Unit, screens: List[Screen] = _screens.toList): Unit = {
+  final def withScreens(f: Screen => Unit, screens: List[Screen] = _activeScreens.toList): Unit = {
     if (screens.nonEmpty) {
       f(screens.head)
       withScreens(f, screens.tail)
