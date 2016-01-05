@@ -1,5 +1,7 @@
 package com.outr.gl.task
 
+import java.io.FileNotFoundException
+
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input.Orientation
 import com.badlogic.gdx.Net.{HttpMethods, HttpResponse, HttpResponseListener}
@@ -11,6 +13,7 @@ import com.badlogic.gdx.net.HttpRequestBuilder
 import com.badlogic.gdx.utils.async.{AsyncExecutor, AsyncTask}
 import com.outr.gl._
 import com.outr.gl.screen.MultiScreenApplication
+import com.outr.gl.tools.BitmapFontManager
 import org.powerscala.concurrent.{AtomicInt, Time}
 
 /**
@@ -26,6 +29,8 @@ class TaskManager(application: MultiScreenApplication,
   private var started = false
   private[task] val _queued = new AtomicInt(0)
   private[task] val _running = new AtomicInt(0)
+
+  private lazy val fontManager = new BitmapFontManager
 
   def queued = _queued()
   def running = _running()
@@ -96,26 +101,46 @@ class TaskManager(application: MultiScreenApplication,
     download(s"$base/$filename", Gdx.files.local(s"$local/$filename"), autoAdd)
   }
 
-  def font(family: String, style: String, size: Int, scaleForOrientation: Option[Orientation] = None) = future {
+  private def fontFilename(family: String, style: String): String = if (style == null || style == "Normal") {
+    family
+  } else {
+    s"$family-$style"
+  }
+
+  def font(family: String, style: String, size: Int, scaleForOrientation: Option[Orientation] = None): BitmapFont = {
     val adjustedSize = scaleForOrientation match {
       case Some(orientation) => fontSize(size, orientation)
       case None => size
     }
-    val fnt = downloadLocal("http://bitmapfonts.outr.com/font", s"$family.$style.$adjustedSize.fnt", "fonts", autoAdd = false)
-    val png = downloadLocal("http://bitmapfonts.outr.com/font", s"$family.$style.$adjustedSize.png", "fonts", autoAdd = false)
-    fnt.invoke()
-    png.invoke()
-    if (!fnt().exists()) {
-      throw new RuntimeException(s"Font file doesn't exist: ${fnt()}.")
+    val filename = fontFilename(family, style)
+    val fnt = Gdx.files.local(s"fonts/$filename-$adjustedSize.fnt")
+    if (fnt.exists()) {
+      new BitmapFont(fnt)
+    } else {
+      val ttf = Gdx.files.classpath(s"$filename.ttf")
+      if (!ttf.exists()) throw new FileNotFoundException(s"Unable to find TTF font: ${filename}.ttf in classpath.")
+      fontManager.createFont(ttf, filename, adjustedSize)
     }
-    if (!png().exists()) {
-      throw new RuntimeException(s"Font texture doesn't exist: ${png()}.")
-    }
-    application.invokeAndWait {
-      val texture = new Texture(png(), true)
-      texture.setFilter(TextureFilter.MipMapLinearLinear, TextureFilter.Linear)
-      new BitmapFont(fnt(), new TextureRegion(texture), false)
-    }
+
+//    val adjustedSize = scaleForOrientation match {
+//      case Some(orientation) => fontSize(size, orientation)
+//      case None => size
+//    }
+//    val fnt = downloadLocal("http://bitmapfonts.outr.com/font", s"$family.$style.$adjustedSize.fnt", "fonts", autoAdd = false)
+//    val png = downloadLocal("http://bitmapfonts.outr.com/font", s"$family.$style.$adjustedSize.png", "fonts", autoAdd = false)
+//    fnt.invoke()
+//    png.invoke()
+//    if (!fnt().exists()) {
+//      throw new RuntimeException(s"Font file doesn't exist: ${fnt()}.")
+//    }
+//    if (!png().exists()) {
+//      throw new RuntimeException(s"Font texture doesn't exist: ${png()}.")
+//    }
+//    application.invokeAndWait {
+//      val texture = new Texture(png(), true)
+//      texture.setFilter(TextureFilter.MipMapLinearLinear, TextureFilter.Linear)
+//      new BitmapFont(fnt(), new TextureRegion(texture), false)
+//    }
   }
 }
 

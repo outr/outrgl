@@ -5,12 +5,12 @@ object OUTRGLBuild extends Build {
   import Dependencies._
 
   lazy val root = Project(id = "root", base = file(".")) aggregate(core, lwjgl, jglfw, android, ios, tools)
-  lazy val core = project("core").withDependencies(gdx.core, powerscala.property)
+  lazy val core = project("core").withDependencies(gdx.core, gdx.freetype, gdx.tools, powerscala.property)
   lazy val lwjgl = project("lwjgl").dependsOn(core).withDependencies(gdx.lwjgl)
   lazy val jglfw = project("jglfw").dependsOn(core).withDependencies(gdx.jglfw)
   lazy val android = project("android").dependsOn(core).withDependencies(google.android, gdx.android)
   lazy val ios = project("ios").dependsOn(core).withDependencies(gdx.ios)
-  lazy val tools = project("tools").dependsOn(lwjgl).withDependencies(gdx.tools)
+  lazy val tools = project("tools").dependsOn(lwjgl)
 
   private def project(projectName: String) = Project(id = projectName, base = file(projectName)).settings(
     name := s"${Details.name}-$projectName",
@@ -78,22 +78,24 @@ object Details {
 }
 
 object Dependencies {
-  val gdxVersion = "1.7.1"
-  val powerscalaVersion = "1.6.10"
-
   object google {
     val android = "com.google.android" % "android" % "4.1.1.4" % "provided"
   }
 
   object gdx {
-    val core = "com.badlogicgames.gdx" % "gdx" % gdxVersion
-    val lwjgl = "com.badlogicgames.gdx" % "gdx-backend-lwjgl" % gdxVersion
-    val jglfw = "com.badlogicgames.gdx" % "gdx-backend-jglfw" % gdxVersion
-    val android = "com.badlogicgames.gdx" % "gdx-backend-android" % gdxVersion
-    val ios = "com.badlogicgames.gdx" % "gdx-backend-robovm" % gdxVersion
-    val tools = "com.badlogicgames.gdx" % "gdx-tools" % gdxVersion
+    private val version = "1.7.2"
+
+    val core = "com.badlogicgames.gdx" % "gdx" % version
+    val lwjgl = "com.badlogicgames.gdx" % "gdx-backend-lwjgl" % version
+    val jglfw = "com.badlogicgames.gdx" % "gdx-backend-jglfw" % version
+    val android = "com.badlogicgames.gdx" % "gdx-backend-android" % version
+    val ios = "com.badlogicgames.gdx" % "gdx-backend-robovm" % version
+    val tools = "com.badlogicgames.gdx" % "gdx-tools" % version
+    val freetype = "com.badlogicgames.gdx" % "gdx-freetype" % version
   }
   object powerscala {
-    val property = "org.powerscala" %% "powerscala-property" % powerscalaVersion
+    private val version = "1.6.10"
+
+    val property = "org.powerscala" %% "powerscala-property" % version
   }
 }
