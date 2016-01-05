@@ -83,7 +83,7 @@ object Dependencies {
   }
 
   object gdx {
-    private val version = "1.7.2"
+    private val version = "1.8.0"
 
     val core = "com.badlogicgames.gdx" % "gdx" % version
     val lwjgl = "com.badlogicgames.gdx" % "gdx-backend-lwjgl" % version

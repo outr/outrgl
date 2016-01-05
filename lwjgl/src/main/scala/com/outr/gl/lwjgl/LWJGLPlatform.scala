@@ -22,8 +22,8 @@ trait LWJGLPlatform extends App with Platform[LwjglApplicationConfiguration] {
     val max = math.max(config.width, config.height)
     val min = math.min(config.width, config.height)
     orientation match {
-      case Orientation.Portrait => lwjgl.getGraphics.setDisplayMode(min, max, false)
-      case Orientation.Landscape => lwjgl.getGraphics.setDisplayMode(max, min, false)
+      case Orientation.Portrait => lwjgl.getGraphics.setWindowedMode(min, max)
+      case Orientation.Landscape => lwjgl.getGraphics.setWindowedMode(max, min)
     }
     ()
   }

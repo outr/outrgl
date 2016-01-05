@@ -1,5 +1,6 @@
 package com.outr.gl.jglfw
 
+import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input.Orientation
 import com.badlogic.gdx.backends.jglfw.{JglfwApplication, JglfwApplicationConfiguration}
 import com.outr.gl.Platform
@@ -22,8 +23,8 @@ trait JGLFWPlatform extends App with Platform[JglfwApplicationConfiguration] {
     val max = math.max(config.width, config.height)
     val min = math.min(config.width, config.height)
     orientation match {
-      case Orientation.Portrait => jglfw.getGraphics.setDisplayMode(min, max, false)
-      case Orientation.Landscape => jglfw.getGraphics.setDisplayMode(max, min, false)
+      case Orientation.Portrait => jglfw.getGraphics.setWindowedMode(min, max)
+      case Orientation.Landscape => jglfw.getGraphics.setWindowedMode(max, min)
     }
     ()
   }
