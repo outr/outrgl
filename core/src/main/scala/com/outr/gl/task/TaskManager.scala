@@ -107,7 +107,7 @@ class TaskManager(application: MultiScreenApplication,
     s"$family-$style"
   }
 
-  def font(family: String, style: String, size: Int, scaleForOrientation: Option[Orientation] = None): BitmapFont = {
+  def font(family: String, style: String, size: Int, scaleForOrientation: Option[Orientation] = None): FutureObject[BitmapFont] = future {
     val adjustedSize = scaleForOrientation match {
       case Some(orientation) => fontSize(size, orientation)
       case None => size
@@ -115,11 +115,15 @@ class TaskManager(application: MultiScreenApplication,
     val filename = fontFilename(family, style)
     val fnt = Gdx.files.local(s"fonts/$filename-$adjustedSize.fnt")
     if (fnt.exists()) {
-      new BitmapFont(fnt)
+      application.invokeAndWait {
+        new BitmapFont(fnt)
+      }
     } else {
       val ttf = Gdx.files.classpath(s"$filename.ttf")
       if (!ttf.exists()) throw new FileNotFoundException(s"Unable to find TTF font: ${filename}.ttf in classpath.")
-      fontManager.createFont(ttf, filename, adjustedSize)
+      application.invokeAndWait {
+        fontManager.createFont(ttf, filename, adjustedSize)
+      }
     }
 
 //    val adjustedSize = scaleForOrientation match {
