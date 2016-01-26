@@ -125,7 +125,7 @@ abstract class MultiScreenApplication extends ApplicationListener {
     lastRender = Gdx.graphics.getFrameId
   }
 
-  private val orientationDelay = 500L
+  private val orientationDelay = 0L //500L
   private def orientationChange(orientation: Orientation): Unit = {
     val current = _orientation()
     if (current != orientation) {   // Different
