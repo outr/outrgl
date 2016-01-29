@@ -114,9 +114,10 @@ abstract class MultiScreenApplication extends ApplicationListener {
     orientationOverride match {
       case Some(o) => orientationChange(o)
       case None => {
-        val accX = math.abs(math.round(Gdx.input.getAccelerometerX))
-        val accY = math.abs(math.round(Gdx.input.getAccelerometerY))
-        orientationChange(if (accY > accX || accX == accY) Orientation.Portrait else Orientation.Landscape)
+        orientationChange(Gdx.input.getNativeOrientation)
+//        val accX = math.abs(math.round(Gdx.input.getAccelerometerX))
+//        val accY = math.abs(math.round(Gdx.input.getAccelerometerY))
+//        orientationChange(if (accY > accX || accX == accY) Orientation.Portrait else Orientation.Landscape)
       }
     }
 
