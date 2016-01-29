@@ -128,7 +128,8 @@ abstract class MultiScreenApplication extends ApplicationListener {
 
   private val orientationDelay = 0L //500L
   private def orientationChange(orientation: Orientation): Unit = {
-    val current = _orientation()
+    _orientation := orientation
+    /*val current = _orientation()
     if (current != orientation) {   // Different
       val time = System.currentTimeMillis()
       orientationChangeStart match {
@@ -140,7 +141,7 @@ abstract class MultiScreenApplication extends ApplicationListener {
       }
     } else {
       orientationChangeStart = None
-    }
+    }*/
   }
 
   @tailrec
