@@ -125,10 +125,10 @@ abstract class MultiScreenApplication extends ApplicationListener {
           native
         }
 
-        orientationChange(o)
-//        val accX = math.abs(math.round(Gdx.input.getAccelerometerX))
-//        val accY = math.abs(math.round(Gdx.input.getAccelerometerY))
-//        orientationChange(if (accY > accX || accX == accY) Orientation.Portrait else Orientation.Landscape)
+//        orientationChange(o)
+        val accX = math.abs(math.round(Gdx.input.getAccelerometerX))
+        val accY = math.abs(math.round(Gdx.input.getAccelerometerY))
+        orientationChange(if (accY > accX || accX == accY) Orientation.Portrait else Orientation.Landscape)
       }
     }
 
@@ -137,10 +137,9 @@ abstract class MultiScreenApplication extends ApplicationListener {
     lastRender = Gdx.graphics.getFrameId
   }
 
-  private val orientationDelay = 0L //500L
+  private val orientationDelay = 500L
   private def orientationChange(orientation: Orientation): Unit = {
-    _orientation := orientation
-    /*val current = _orientation()
+    val current = _orientation()
     if (current != orientation) {   // Different
       val time = System.currentTimeMillis()
       orientationChangeStart match {
@@ -152,7 +151,7 @@ abstract class MultiScreenApplication extends ApplicationListener {
       }
     } else {
       orientationChangeStart = None
-    }*/
+    }
   }
 
   @tailrec
