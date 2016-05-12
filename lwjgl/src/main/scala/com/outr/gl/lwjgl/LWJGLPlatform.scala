@@ -27,4 +27,6 @@ trait LWJGLPlatform extends App with Platform[LwjglApplicationConfiguration] {
     }
     ()
   }
+
+  override def platformId: String = "desktop"
 }

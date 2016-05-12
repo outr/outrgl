@@ -3,13 +3,15 @@ package com.outr.gl.android
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import com.badlogic.gdx.Input.Orientation
-import com.badlogic.gdx.backends.android.{AndroidApplicationConfiguration, AndroidApplication}
+import com.badlogic.gdx.backends.android.{AndroidApplication, AndroidApplicationConfiguration}
 import com.outr.gl.Platform
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
 trait AndroidPlatform extends AndroidApplication with Platform[AndroidApplicationConfiguration] {
+  override def platformId: String = "android"
+
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
 

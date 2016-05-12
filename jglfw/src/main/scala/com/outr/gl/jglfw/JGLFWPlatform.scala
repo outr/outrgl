@@ -1,6 +1,5 @@
 package com.outr.gl.jglfw
 
-import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input.Orientation
 import com.badlogic.gdx.backends.jglfw.{JglfwApplication, JglfwApplicationConfiguration}
 import com.outr.gl.Platform
@@ -28,4 +27,6 @@ trait JGLFWPlatform extends App with Platform[JglfwApplicationConfiguration] {
     }
     ()
   }
+
+  override def platformId: String = "desktop"
 }

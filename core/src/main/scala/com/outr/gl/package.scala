@@ -9,7 +9,6 @@ import com.badlogic.gdx.scenes.scene2d.actions.{Actions, AlphaAction, DelayActio
 import com.outr.gl.actor.EnhancedActor
 import com.outr.gl.screen.AbstractBaseScreen
 import com.outr.gl.task.FutureObject
-import org.powerscala.Storage
 
 import scala.language.implicitConversions
 
