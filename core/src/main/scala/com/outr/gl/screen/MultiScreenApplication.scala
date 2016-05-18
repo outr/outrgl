@@ -6,6 +6,8 @@ import com.badlogic.gdx.Input.Orientation
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.{ApplicationListener, Gdx, Screen}
 import com.outr.gl.{Platform, _}
+import org.powerscala.concurrent.Time
+import org.powerscala.property.Property
 
 import scala.annotation.tailrec
 import scala.collection.mutable
