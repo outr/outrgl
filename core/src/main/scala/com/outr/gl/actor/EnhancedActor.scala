@@ -30,6 +30,7 @@ class EnhancedActor[A <: Actor](actor: A)(implicit screen: AbstractBaseScreen) e
   lazy val panStopped = new UnitProcessor[MouseEvent]("panStopped")
   lazy val zoomed = new UnitProcessor[ZoomEvent]("zoomed")
   lazy val pinched = new UnitProcessor[PinchEvent]("pinched")
+  lazy val pinchStopped = new UnitProcessor[MouseEvent]("pinchStopped")
 
   // Default to only passing events down
   actor.setTouchable(Touchable.childrenOnly)

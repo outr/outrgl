@@ -18,6 +18,7 @@ class TextInput(placeholder: Label, style: TextFieldStyle) extends TextField("",
     super.focus()
 
     getOnscreenKeyboard.show(true)
+    true
   }
 
   override def setText(str: String): Unit = {

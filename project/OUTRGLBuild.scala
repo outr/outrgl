@@ -4,10 +4,10 @@ import sbt._
 object OUTRGLBuild extends Build {
   import Dependencies._
 
-  lazy val root = Project(id = "root", base = file(".")) aggregate(core, lwjgl, jglfw, android, ios, tools)
+  lazy val root = Project(id = "root", base = file(".")) aggregate(core, lwjgl, android, ios, tools)
   lazy val core = project("core").withDependencies(gdx.core, gdx.freetype, gdx.tools, powerscala.property)
   lazy val lwjgl = project("lwjgl").dependsOn(core).withDependencies(gdx.lwjgl)
-  lazy val jglfw = project("jglfw").dependsOn(core).withDependencies(gdx.jglfw)
+//  lazy val jglfw = project("jglfw").dependsOn(core).withDependencies(gdx.jglfw)
   lazy val android = project("android").dependsOn(core).withDependencies(google.android, gdx.android)
   lazy val ios = project("ios").dependsOn(core).withDependencies(gdx.ios)
   lazy val tools = project("tools").dependsOn(lwjgl)
@@ -83,11 +83,10 @@ object Dependencies {
   }
 
   object gdx {
-    private val version = "1.8.0"
+    private val version = "1.9.8"
 
     val core = "com.badlogicgames.gdx" % "gdx" % version
     val lwjgl = "com.badlogicgames.gdx" % "gdx-backend-lwjgl" % version
-    val jglfw = "com.badlogicgames.gdx" % "gdx-backend-jglfw" % version
     val android = "com.badlogicgames.gdx" % "gdx-backend-android" % version
     val ios = "com.badlogicgames.gdx" % "gdx-backend-robovm" % version
     val tools = "com.badlogicgames.gdx" % "gdx-tools" % version

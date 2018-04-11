@@ -81,6 +81,7 @@ class InputManager private(val screen: AbstractBaseScreen) extends Listenable wi
   val panStopped = new UnitProcessor[MouseEvent]("panStopped")
   val zoomed = new UnitProcessor[ZoomEvent]("zoomed")
   val pinched = new UnitProcessor[PinchEvent]("pinched")
+  val pinchStopped = new UnitProcessor[MouseEvent]("pinchStopped")
 
   val processor = new ScreenInputProcessor(this)
 
@@ -301,6 +302,11 @@ private[input] class ScreenInputProcessor(manager: InputManager) extends InputPr
     manager.pinched.fire(manager.pinchEvent(initialPointer1, initialPointer2, pointer1, pointer2))
     manager.atCursor.pinched.fire(manager.pinchEvent)
     true
+  }
+
+  override def pinchStop(): Unit = {
+    manager.pinchStopped.fire(manager.mouseEvent)
+    manager.atCursor.pinchStopped.fire(manager.mouseEvent)
   }
 }
 
